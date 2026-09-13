@@ -7,7 +7,7 @@ export default async function BatchUsersPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id: batchId } = await props.params;
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) return redirect('/dashboard');
 
   const supabase = await createClient();

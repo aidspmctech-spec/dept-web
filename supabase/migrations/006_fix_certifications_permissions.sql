@@ -21,7 +21,7 @@ WITH CHECK (student_id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage certifications" ON public.certifications;
 CREATE POLICY "Staff and Admin can manage certifications"
 ON public.certifications FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 COMMIT;

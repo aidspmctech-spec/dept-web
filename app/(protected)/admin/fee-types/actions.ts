@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/auth';
 
 export async function createFeeType(formData: FormData) {
-  await requireRole(['ADMIN']);
+  await requireRole(['STAFF']);
   const adminSupabase = createAdminClient();
 
   const name = formData.get('name') as string;
@@ -36,7 +36,7 @@ export async function deleteFeeType(formData: FormData) {
   const id = formData.get('id') as string;
   if (!id) throw new Error('Fee type ID is required');
 
-  await requireRole(['ADMIN']);
+  await requireRole(['STAFF']);
   const adminSupabase = createAdminClient();
 
   const { error } = await adminSupabase

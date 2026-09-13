@@ -55,6 +55,11 @@ export default function FeeForm({ initialData, academicYear, customFeeDefinition
     setFees((prev) => ({ ...prev, [field]: numValue }));
   };
 
+  const handleTotalFeeChange = (field: keyof typeof fees, value: string) => {
+    const numValue = parseFloat(value) || 0;
+    setFees((prev) => ({ ...prev, [field]: numValue }));
+  };
+
   const handleCustomFeeChange = (feeId: string, value: string) => {
     const numValue = parseFloat(value) || 0;
     setFees((prev) => ({
@@ -93,11 +98,13 @@ export default function FeeForm({ initialData, academicYear, customFeeDefinition
     }
   };
 
-  const FeeInput = ({ label, total, paidField, value, onChange }: {
+  const FeeInput = ({ label, total, paidField, totalField, value, onTotalChange, onChange }: {
     label: string;
     total: number;
     paidField: string;
+    totalField?: keyof typeof fees;
     value: number;
+    onTotalChange?: (val: string) => void;
     onChange: (val: string) => void;
   }) => {
     const pending = total - value;
@@ -111,8 +118,9 @@ export default function FeeForm({ initialData, academicYear, customFeeDefinition
             <input
               type="number"
               value={total}
-              readOnly
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 text-gray-600 outline-none"
+              onChange={(e) => onTotalChange?.(e.target.value)}
+              readOnly={!onTotalChange}
+              className={`w-full px-3 py-2 border border-gray-300 rounded-md outline-none ${!onTotalChange ? 'bg-gray-100 text-gray-600' : 'focus:ring-2 focus:ring-blue-500'}`}
               min="0"
             />
           </div>
@@ -200,8 +208,10 @@ export default function FeeForm({ initialData, academicYear, customFeeDefinition
           <FeeInput
             label="Tuition Fee"
             total={fees.tuitionTotal}
+            totalField="tuitionTotal"
             paidField="tuitionPaid"
             value={fees.tuitionPaid}
+            onTotalChange={(val) => handleTotalFeeChange('tuitionTotal', val)}
             onChange={(val) => handleFeeChange('tuitionPaid', val)}
           />
 
@@ -209,8 +219,10 @@ export default function FeeForm({ initialData, academicYear, customFeeDefinition
             <FeeInput
               label="Hostel Fee"
               total={fees.hostelTotal}
+              totalField="hostelTotal"
               paidField="hostelPaid"
               value={fees.hostelPaid}
+              onTotalChange={(val) => handleTotalFeeChange('hostelTotal', val)}
               onChange={(val) => handleFeeChange('hostelPaid', val)}
             />
           )}
@@ -219,8 +231,10 @@ export default function FeeForm({ initialData, academicYear, customFeeDefinition
             <FeeInput
               label="Bus Fee"
               total={fees.busTotal}
+              totalField="busTotal"
               paidField="busPaid"
               value={fees.busPaid}
+              onTotalChange={(val) => handleTotalFeeChange('busTotal', val)}
               onChange={(val) => handleFeeChange('busPaid', val)}
             />
           )}

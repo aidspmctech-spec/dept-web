@@ -8,7 +8,7 @@ import { sendVerificationEmail } from '@/lib/email/gmail';
 
 export async function createBatch(formData: FormData) {
   // Re‑verify admin role on each request
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) throw new Error('Unauthorized');
 
   const name = formData.get('name') as string;
@@ -23,12 +23,120 @@ export async function createBatch(formData: FormData) {
   }
 }
 
+export async function registerStudentInBatch(formData: FormData) {
+  const profile = await requireRole(['STAFF']);
+  if (!profile) return { success: false, error: 'Unauthorized' };
+
+  const fullName = (formData.get('fullName') as string || '').trim();
+  const registerNumber = (formData.get('registerNumber') as string || '').trim().toUpperCase();
+  const email = (formData.get('email') as string || '').trim().toLowerCase();
+  const password = (formData.get('password') as string || '').trim();
+  const batchId = (formData.get('batchId') as string || '').trim();
+  const section = (formData.get('section') as string || '').trim().toUpperCase();
+
+  if (!fullName || !registerNumber || !email || !password || !batchId || !section) {
+    return { success: false, error: 'All fields are required' };
+  }
+
+  if (password.length < 8) {
+    return { success: false, error: 'Password must be at least 8 characters long' };
+  }
+
+  if (section !== 'A' && section !== 'B') {
+    return { success: false, error: 'Only sections A and B are allowed' };
+  }
+
+  const adminSupabase = createAdminClient();
+
+  try {
+    // 1. Verify Batch exists
+    const { data: batch } = await adminSupabase
+      .from('batches')
+      .select('id')
+      .eq('id', batchId)
+      .single();
+
+    if (!batch) {
+      return { success: false, error: 'Invalid batch selected' };
+    }
+
+    // 2. Check duplicate register number
+    const { data: existingStudent } = await adminSupabase
+      .from('students')
+      .select('id')
+      .eq('register_number', registerNumber)
+      .maybeSingle();
+
+    if (existingStudent) {
+      return { success: false, error: 'Register number already in use' };
+    }
+
+    // 3. Check duplicate email in Auth
+    const { data: authUsers, error: authListError } = await adminSupabase.auth.admin.listUsers();
+    if (authListError) throw authListError;
+    if (authUsers.users.some(u => u.email === email)) {
+      return { success: false, error: 'Email already in use' };
+    }
+
+    // 4. Create Auth User
+    const { data: authData, error: authError } = await adminSupabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true,
+    });
+
+    if (authError) throw authError;
+    const authUserId = authData.user.id;
+
+    try {
+      // 5. Create Student Record
+      const { data: studentData, error: studentError } = await adminSupabase
+        .from('students')
+        .insert({
+          register_number: registerNumber,
+          name: fullName,
+          email,
+          batch_id: batchId,
+          section,
+          status: 'ACTIVE',
+        })
+        .select()
+        .single();
+
+      if (studentError) throw studentError;
+      const studentId = studentData.id;
+
+      // 6. Create Profile Record
+      const { error: profileError } = await adminSupabase
+        .from('profiles')
+        .insert({
+          user_id: authUserId,
+          role: 'STUDENT',
+          student_id: studentId,
+        });
+
+      if (profileError) throw profileError;
+
+      revalidatePath(`/admin/batches/${batchId}/users`);
+      return { success: true };
+
+    } catch (innerError: any) {
+      // Rollback Auth User
+      await adminSupabase.auth.admin.deleteUser(authUserId);
+      throw innerError;
+    }
+  } catch (err: any) {
+    console.error('[STAFF STUDENT CREATE] Error:', err.message);
+    return { success: false, error: err.message };
+  }
+}
+
 export async function deleteBatch(formData: FormData) {
   const id = formData.get('id') as string;
   if (!id) throw new Error('Batch ID is required');
 
   // Re‑verify admin role on each request
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) throw new Error('Unauthorized');
 
   try {
@@ -53,58 +161,3 @@ export async function deleteBatch(formData: FormData) {
   }
 }
 
-export async function registerStudentInBatch(formData: FormData) {
-  const profile = await requireRole(['ADMIN']);
-  if (!profile) throw new Error('Unauthorized');
-
-  const registerNumber = (formData.get('registerNumber') as string || '').trim().toUpperCase();
-  const name = (formData.get('name') as string || '').trim();
-  const email = (formData.get('email') as string || '').trim().toLowerCase();
-  const password = formData.get('password') as string;
-  const batchId = formData.get('batchId') as string;
-
-  if (!registerNumber || !name || !email || !password || !batchId) {
-    throw new Error('All fields are required');
-  }
-
-  const adminSupabase = createAdminClient();
-  let authUserId: string | null = null;
-  let studentId: string | null = null;
-
-  try {
-    const { data: userData, error: userError } = await adminSupabase.auth.admin.createUser({
-      email, password, email_confirm: false,
-    });
-    if (userError) throw userError;
-    authUserId = userData.user.id;
-
-    const { data: studentData, error: studentError } = await adminSupabase
-      .from('students')
-      .insert({ register_number: registerNumber, name, email, batch_id: batchId, status: 'ACTIVE' })
-      .select()
-      .single();
-    if (studentError) throw studentError;
-    studentId = studentData.id;
-
-    const { error: profileError } = await adminSupabase
-      .from('profiles')
-      .insert({ user_id: authUserId, student_id: studentId, role: 'STUDENT' });
-    if (profileError) throw profileError;
-
-    const { data: linkData, error: linkError } = await adminSupabase.auth.admin.generateLink({
-      type: 'signup', email, password,
-    });
-    if (!linkError) {
-      await sendVerificationEmail(email, name, linkData.properties.action_link);
-    } else {
-      console.error('[REGISTER] Link generation failed:', linkError.message);
-    }
-
-    revalidatePath(`/admin/batches/${batchId}/users`);
-    return { success: true, studentId };
-  } catch (error: any) {
-    if (authUserId) await adminSupabase.auth.admin.deleteUser(authUserId);
-    if (studentId) await adminSupabase.from('students').delete().eq('id', studentId);
-    return { success: false, error: error.message };
-  }
-}

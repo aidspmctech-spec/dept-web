@@ -46,7 +46,7 @@ ALTER TABLE public.fee_structures ENABLE ROW LEVEL SECURITY;
 
 CREATE POLICY "Students can view own fees"
 ON public.fee_structures FOR SELECT TO authenticated
-USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 CREATE POLICY "Students can manage own declared fees"
 ON public.fee_structures FOR ALL TO authenticated

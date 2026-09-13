@@ -2,13 +2,13 @@ import { requireRole } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
-import { registerStudentInBatch } from '../../actions';
+import AddStudentForm from './AddStudentForm';
 
 export default async function BatchUsersPage(props: {
   params: Promise<{ id: string }>;
 }) {
   const { id: batchId } = await props.params;
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) return redirect('/dashboard');
 
   const supabase = await createClient();
@@ -43,57 +43,6 @@ export default async function BatchUsersPage(props: {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Add Student Form */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Add Student to Batch</h2>
-          <form action={registerStudentInBatch} className="space-y-4">
-            <input type="hidden" name="batchId" value={batchId} />
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600 mb-1">Register Number *</label>
-              <input
-                name="registerNumber"
-                type="text"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="e.g. 21AI001"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600 mb-1">Full Name *</label>
-              <input
-                name="name"
-                type="text"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="Enter full name"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600 mb-1">Email Address *</label>
-              <input
-                name="email"
-                type="email"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="college email"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <label className="block text-sm font-medium text-gray-600 mb-1">Temporary Password *</label>
-              <input
-                name="password"
-                type="password"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="At least 8 chars, Upper, Lower, Num"
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary w-full justify-center">
-              Create Student Account
-            </button>
-          </form>
-        </div>
-
         {/* Students List */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
           <table className="w-full text-left border-collapse">
@@ -126,6 +75,11 @@ export default async function BatchUsersPage(props: {
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Add Student Form */}
+        <div className="lg:col-span-1">
+          <AddStudentForm batchId={batchId} />
         </div>
       </div>
     </div>

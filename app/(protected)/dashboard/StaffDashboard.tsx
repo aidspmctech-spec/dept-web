@@ -32,7 +32,7 @@ export default async function StaffDashboard({ profile }: StaffDashboardProps) {
     { id: 'activities', label: 'Activities', path: '/staff/activities', description: ' Manage student events', icon: '🌟' },
   ];
 
-  const adminLinks = profile.role === 'ADMIN' ? [
+  const adminLinks = profile.role === 'STAFF' ? [
     { id: 'batches', label: 'Batch Management', path: '/admin/batches', description: 'Create & delete batches', icon: '📦' },
     { id: 'logs', label: 'System Audit Logs', path: '/admin/logs', description: 'Monitor system activities', icon: '📑' },
   ] : [];

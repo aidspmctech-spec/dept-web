@@ -3,7 +3,7 @@ import { requireRole } from '@/lib/auth';
 import Link from 'next/link';
 
 export default async function AuditLogsPage() {
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) {
     return (
       <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">

@@ -33,7 +33,7 @@ The system uses a dispatch-based API:
 ## 4. Current Authentication & Authorization
 - **Authentication**: Users provide a `secretKey`. The backend hashes this key with a salt (`CONFIG.HASH_SALT`) and compares it against the `SecretKeyHash` in the `AccessKeys` sheet.
 - **Session Management**: Handled by `SessionManager.gs` (likely using `PropertiesService`).
-- **Authorization**: Role-based access control (RBAC). The `Auth.authorize(role, action)` function determines if a user's role (STUDENT, STAFF, ADMIN) is permitted to execute a specific action.
+- **Authorization**: Role-based access control (RBAC). The `Auth.authorize(role, action)` function determines if a user's role (STUDENT, STAFF) is permitted to execute a specific action.
 
 ## 5. Migration Strategy
 The goal is to move the application to a **Next.js (Vercel)** + **Supabase (PostgreSQL)** stack.

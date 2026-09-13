@@ -5,7 +5,7 @@ import { requireRole } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 
 export default async function FeeTypesPage() {
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) redirect('/dashboard');
 
   const supabase = await createClient();
@@ -74,7 +74,6 @@ export default async function FeeTypesPage() {
                 <option value="all">All Sections</option>
                 <option value="A">Section A</option>
                 <option value="B">Section B</option>
-                <option value="C">Section C</option>
               </select>
             </div>
 

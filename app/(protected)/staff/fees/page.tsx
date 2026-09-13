@@ -59,13 +59,13 @@ export default async function FeesManagementPage({
 
     const paid = studentPayments
       .filter((p: any) => p.fee_component === component)
-      .reduce((sum, p: any) => sum + p.amount, 0);
+      .reduce((sum: number, p: any) => sum + p.amount, 0);
 
     // For custom fees, we must filter by fee_type_id
     const actualPaid = (component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL')
       ? studentPayments
           .filter((p: any) => p.fee_type_id === component)
-          .reduce((sum, p: any) => sum + p.amount, 0)
+          .reduce((sum: number, p: any) => sum + p.amount, 0)
       : paid;
 
     const pending = total - actualPaid;
@@ -113,7 +113,7 @@ export default async function FeesManagementPage({
         <div className="flex flex-wrap items-center gap-4">
           <DataFilterBar
             batches={batches}
-            sections={['A', 'B', 'C']}
+            sections={['A', 'B']}
             currentBatch={batch}
             currentSection={section}
           />

@@ -18,7 +18,7 @@ The IIDS Student Portal has been migrated from a Google Sheets backend to a norm
 
 ## Table Details
 - **students**: Core identity table. Uses `register_number` as the unique business key.
-- **profiles**: Maps Supabase Auth users to internal roles (`STUDENT`, `STAFF`, `ADMIN`).
+- **profiles**: Maps Supabase Auth users to internal roles (`STUDENT`, `STAFF`).
 - **audit_logs**: Captures all critical system changes for compliance and security.
 - **academic_records**: Stores longitudinal GPA and semester data.
 
@@ -29,4 +29,4 @@ The IIDS Student Portal has been migrated from a Google Sheets backend to a norm
 ## Security Model
 - **Row Level Security (RLS)**: Enabled on all tables.
 - **Isolation**: Students can only read their own rows via `get_my_student_id()` function.
-- **Privilege**: Staff and Admins have elevated access governed by the `profiles.role` check.
+- **Privilege**: Staff have elevated access governed by the `profiles.role` check.

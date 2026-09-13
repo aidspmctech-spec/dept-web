@@ -1,12 +1,12 @@
 import { requireRole } from '@/lib/auth';
 import { batchRepository } from '@/lib/repositories/batchRepository';
-import { createBatch } from './actions';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import DeleteBatchButton from './DeleteBatchButton';
+import CreateBatchForm from './CreateBatchForm';
 
 export default async function BatchesPage() {
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) return redirect('/dashboard');
 
   const batches = await batchRepository.getAll();
@@ -19,24 +19,7 @@ export default async function BatchesPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Create Batch Form */}
-        <div className="bg-white p-6 rounded-lg shadow-sm border border-gray-200 h-fit">
-          <h2 className="text-lg font-semibold text-gray-700 mb-4">Create New Batch</h2>
-          <form action={createBatch} className="space-y-4">
-            <div>
-              <label className="block text-sm font-medium text-gray-600 mb-1">Batch Name *</label>
-              <input
-                name="name"
-                type="text"
-                className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
-                placeholder="e.g. 2021-2025"
-                required
-              />
-            </div>
-            <button type="submit" className="btn btn-primary w-full justify-center">
-              Create Batch
-            </button>
-          </form>
-        </div>
+        <CreateBatchForm />
 
         {/* Batches List */}
         <div className="lg:col-span-2 bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">

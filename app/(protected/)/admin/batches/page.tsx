@@ -5,7 +5,7 @@ import { redirect } from 'next/navigation';
 import Link from 'next/link';
 
 export default async function BatchesPage() {
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) return redirect('/dashboard');
 
   const batches = await batchRepository.getAll();

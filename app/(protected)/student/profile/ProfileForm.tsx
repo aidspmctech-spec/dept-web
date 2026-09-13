@@ -97,18 +97,22 @@ export default function ProfileForm({ student, hostel, transport, batches }: Pro
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Batch</label>
-            <select name="batch_id" defaultValue={student.batch_id || ''} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
+            <select name="batch_id" defaultValue={student.batch_id || ''} disabled className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed outline-none">
               <option value="">Select Batch</option>
               {batches.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
             </select>
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Current Semester</label>
-            <input type="number" name="semester" defaultValue={student.semester || ''} min="1" max="8" className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+            <input type="number" name="semester" defaultValue={student.semester || ''} disabled min="1" max="8" className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed outline-none" />
           </div>
           <div className="space-y-2">
             <label className="text-sm font-medium text-gray-700">Section</label>
-            <input type="text" name="section" defaultValue={student.section || ''} className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" />
+            <select name="section" defaultValue={student.section || ''} disabled className="w-full px-4 py-2 border border-gray-300 rounded-lg bg-gray-100 cursor-not-allowed outline-none">
+              <option value="">Select Section</option>
+              <option value="A">Section A</option>
+              <option value="B">Section B</option>
+            </select>
           </div>
         </div>
       </div>

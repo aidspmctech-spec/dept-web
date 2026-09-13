@@ -270,110 +270,110 @@ ALTER TABLE public.batches ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Authenticated users can view batches" ON public.batches;
 CREATE POLICY "Authenticated users can view batches" ON public.batches FOR SELECT TO authenticated USING (true);
 DROP POLICY IF EXISTS "Staff and Admin can manage batches" ON public.batches;
-CREATE POLICY "Staff and Admin can manage batches" ON public.batches FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage batches" ON public.batches FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- STUDENTS
 ALTER TABLE public.students ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own student record" ON public.students;
-CREATE POLICY "Students can view own student record" ON public.students FOR SELECT TO authenticated USING (id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own student record" ON public.students FOR SELECT TO authenticated USING (id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Students can update own student record" ON public.students;
 CREATE POLICY "Students can update own student record" ON public.students FOR UPDATE TO authenticated USING (id = public.get_my_student_id()) WITH CHECK (id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage students" ON public.students;
-CREATE POLICY "Staff and Admin can manage students" ON public.students FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage students" ON public.students FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- STAFF
 ALTER TABLE public.staff ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Authenticated users can view staff" ON public.staff;
 CREATE POLICY "Authenticated users can view staff" ON public.staff FOR SELECT TO authenticated USING (true);
 DROP POLICY IF EXISTS "Only Admin can manage staff" ON public.staff;
-CREATE POLICY "Only Admin can manage staff" ON public.staff FOR ALL TO authenticated USING (public.get_my_role() = 'ADMIN') WITH CHECK (public.get_my_role() = 'ADMIN');
+CREATE POLICY "Only Admin can manage staff" ON public.staff FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- PROFILES
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Users can view own or staff/admin profiles" ON public.profiles;
-CREATE POLICY "Users can view own or staff/admin profiles" ON public.profiles FOR SELECT TO authenticated USING (user_id = auth.uid() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Users can view own or staff/admin profiles" ON public.profiles FOR SELECT TO authenticated USING (user_id = auth.uid() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Only Admin can manage profiles" ON public.profiles;
-CREATE POLICY "Only Admin can manage profiles" ON public.profiles FOR ALL TO authenticated USING (public.get_my_role() = 'ADMIN') WITH CHECK (public.get_my_role() = 'ADMIN');
+CREATE POLICY "Only Admin can manage profiles" ON public.profiles FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- ACADEMIC RECORDS
 ALTER TABLE public.academic_records ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own academic records" ON public.academic_records;
-CREATE POLICY "Students can view own academic records" ON public.academic_records FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own academic records" ON public.academic_records FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Staff and Admin can manage academic records" ON public.academic_records;
-CREATE POLICY "Staff and Admin can manage academic records" ON public.academic_records FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage academic records" ON public.academic_records FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- FEE STRUCTURES
 ALTER TABLE public.fee_structures ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own fees" ON public.fee_structures;
-CREATE POLICY "Students can view own fees" ON public.fee_structures FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own fees" ON public.fee_structures FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Staff and Admin can manage fees" ON public.fee_structures;
-CREATE POLICY "Staff and Admin can manage fees" ON public.fee_structures FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage fees" ON public.fee_structures FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- PAYMENTS
 ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own payments" ON public.payments;
-CREATE POLICY "Students can view own payments" ON public.payments FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own payments" ON public.payments FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Staff and Admin can manage payments" ON public.payments;
-CREATE POLICY "Staff and Admin can manage payments" ON public.payments FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage payments" ON public.payments FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- HOSTEL
 ALTER TABLE public.hostel_details ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own hostel details" ON public.hostel_details;
-CREATE POLICY "Students can view own hostel details" ON public.hostel_details FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own hostel details" ON public.hostel_details FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Students can manage own hostel details" ON public.hostel_details;
 CREATE POLICY "Students can manage own hostel details" ON public.hostel_details FOR ALL TO authenticated USING (student_id = public.get_my_student_id()) WITH CHECK (student_id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage hostel details" ON public.hostel_details;
-CREATE POLICY "Staff and Admin can manage hostel details" ON public.hostel_details FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage hostel details" ON public.hostel_details FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- TRANSPORT
 ALTER TABLE public.transport_details ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own transport details" ON public.transport_details;
-CREATE POLICY "Students can view own transport details" ON public.transport_details FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own transport details" ON public.transport_details FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Students can manage own transport details" ON public.transport_details;
 CREATE POLICY "Students can manage own transport details" ON public.transport_details FOR ALL TO authenticated USING (student_id = public.get_my_student_id()) WITH CHECK (student_id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage transport details" ON public.transport_details;
-CREATE POLICY "Staff and Admin can manage transport details" ON public.transport_details FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage transport details" ON public.transport_details FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- ACHIEVEMENTS
 ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own achievements" ON public.achievements;
-CREATE POLICY "Students can view own achievements" ON public.achievements FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own achievements" ON public.achievements FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Students can manage own achievements" ON public.achievements;
 CREATE POLICY "Students can manage own achievements" ON public.achievements FOR ALL TO authenticated USING (student_id = public.get_my_student_id()) WITH CHECK (student_id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage achievements" ON public.achievements;
-CREATE POLICY "Staff and Admin can manage achievements" ON public.achievements FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage achievements" ON public.achievements FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- CERTIFICATIONS
 ALTER TABLE public.certifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own certifications" ON public.certifications;
-CREATE POLICY "Students can view own certifications" ON public.certifications FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own certifications" ON public.certifications FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Students can manage own certifications" ON public.certifications;
 CREATE POLICY "Students can manage own certifications" ON public.certifications FOR ALL TO authenticated USING (student_id = public.get_my_student_id()) WITH CHECK (student_id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage certifications" ON public.certifications;
-CREATE POLICY "Staff and Admin can manage certifications" ON public.certifications FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage certifications" ON public.certifications FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- ACTIVITIES
 ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own activities" ON public.activities;
-CREATE POLICY "Students can view own activities" ON public.activities FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Students can view own activities" ON public.activities FOR SELECT TO authenticated USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Students can manage own activities" ON public.activities;
 CREATE POLICY "Students can manage own activities" ON public.activities FOR ALL TO authenticated USING (student_id = public.get_my_student_id()) WITH CHECK (student_id = public.get_my_student_id());
 DROP POLICY IF EXISTS "Staff and Admin can manage activities" ON public.activities;
-CREATE POLICY "Staff and Admin can manage activities" ON public.activities FOR ALL TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN')) WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can manage activities" ON public.activities FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- AUDIT LOGS
 ALTER TABLE public.audit_logs ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Staff and Admin can view audit logs" ON public.audit_logs;
-CREATE POLICY "Staff and Admin can view audit logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can view audit logs" ON public.audit_logs FOR SELECT TO authenticated USING (public.get_my_role() = 'STAFF');
 DROP POLICY IF EXISTS "Staff and Admin can insert audit logs" ON public.audit_logs;
-CREATE POLICY "Staff and Admin can insert audit logs" ON public.audit_logs FOR INSERT TO authenticated WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+CREATE POLICY "Staff and Admin can insert audit logs" ON public.audit_logs FOR INSERT TO authenticated WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- SETTINGS
 ALTER TABLE public.settings ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Authenticated users can view settings" ON public.settings;
 CREATE POLICY "Authenticated users can view settings" ON public.settings FOR SELECT TO authenticated USING (true);
 DROP POLICY IF EXISTS "Only Admin can manage settings" ON public.settings;
-CREATE POLICY "Only Admin can manage settings" ON public.settings FOR ALL TO authenticated USING (public.get_my_role() = 'ADMIN') WITH CHECK (public.get_my_role() = 'ADMIN');
+CREATE POLICY "Only Admin can manage settings" ON public.settings FOR ALL TO authenticated USING (public.get_my_role() = 'STAFF') WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- =========================================================
 -- 6. TRIGGER RE-APPLICATION

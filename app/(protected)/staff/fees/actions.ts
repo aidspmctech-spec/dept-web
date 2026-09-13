@@ -5,7 +5,7 @@ import { revalidatePath } from 'next/cache';
 import { requireRole } from '@/lib/auth';
 
 export async function updateFeeStructure(formData: FormData) {
-  await requireRole(['ADMIN', 'STAFF']);
+  await requireRole(['STAFF']);
   const adminSupabase = createAdminClient();
   const studentId = formData.get('studentId') as string;
   const academicYear = formData.get('academicYear') as string;

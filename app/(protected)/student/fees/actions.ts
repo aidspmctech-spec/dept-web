@@ -4,6 +4,23 @@ import { getCurrentProfile } from '@/lib/auth';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
+export async function syncStudentFees(academicYear: string) {
+  const profile = await getCurrentProfile();
+  if (!profile || profile.role !== 'STUDENT' || !profile.student_id) {
+    throw new Error('Unauthorized');
+  }
+
+  const adminSupabase = createAdminClient();
+  const { error } = await adminSupabase.rpc('sync_student_fee_structure', {
+    p_student_id: profile.student_id,
+    p_academic_year: academicYear,
+  });
+
+  if (error) throw error;
+
+  revalidatePath('/student/fees');
+}
+
 export async function updateFeeDetails(formData: FormData) {
   const profile = await getCurrentProfile();
 

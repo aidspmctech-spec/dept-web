@@ -84,7 +84,7 @@ CREATE TABLE public.staff (
 CREATE TABLE public.profiles (
     id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     user_id UUID UNIQUE NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
-    role TEXT NOT NULL CHECK (role IN ('STUDENT', 'STAFF', 'ADMIN')),
+    role TEXT NOT NULL CHECK (role IN ('STUDENT', 'STAFF')),
     student_id UUID UNIQUE REFERENCES public.students(id) ON DELETE SET NULL,
     staff_id UUID REFERENCES public.staff(id) ON DELETE SET NULL,
     created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
@@ -580,15 +580,15 @@ USING (true);
 
 CREATE POLICY "Staff and Admin can manage batches"
 ON public.batches FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- STUDENTS
 CREATE POLICY "Students can view own student record"
 ON public.students FOR SELECT TO authenticated
 USING (
     id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Students can update own student record"
@@ -598,8 +598,8 @@ WITH CHECK (id = public.get_my_student_id());
 
 CREATE POLICY "Staff and Admin can manage students"
 ON public.students FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- STAFF
 CREATE POLICY "Authenticated users can view staff"
@@ -608,69 +608,69 @@ USING (true);
 
 CREATE POLICY "Only Admin can manage staff"
 ON public.staff FOR ALL TO authenticated
-USING (public.get_my_role() = 'ADMIN')
-WITH CHECK (public.get_my_role() = 'ADMIN');
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- PROFILES
 CREATE POLICY "Users can view own or staff/admin profiles"
 ON public.profiles FOR SELECT TO authenticated
 USING (
     user_id = auth.uid()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Only Admin can manage profiles"
 ON public.profiles FOR ALL TO authenticated
-USING (public.get_my_role() = 'ADMIN')
-WITH CHECK (public.get_my_role() = 'ADMIN');
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- ACADEMIC RECORDS
 CREATE POLICY "Students can view own academic records"
 ON public.academic_records FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Staff and Admin can manage academic records"
 ON public.academic_records FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- FEE STRUCTURES
 CREATE POLICY "Students can view own fees"
 ON public.fee_structures FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Staff and Admin can manage fees"
 ON public.fee_structures FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- PAYMENTS
 CREATE POLICY "Students can view own payments"
 ON public.payments FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 -- IMPORTANT: students have NO direct INSERT/UPDATE/DELETE policy.
 -- Payment creation must go through submit_student_payment().
 CREATE POLICY "Staff and Admin can manage payments"
 ON public.payments FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- HOSTEL
 CREATE POLICY "Students can view own hostel details"
 ON public.hostel_details FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Students can manage own hostel details"
@@ -680,15 +680,15 @@ WITH CHECK (student_id = public.get_my_student_id());
 
 CREATE POLICY "Staff and Admin can manage hostel details"
 ON public.hostel_details FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- TRANSPORT
 CREATE POLICY "Students can view own transport details"
 ON public.transport_details FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Students can manage own transport details"
@@ -698,15 +698,15 @@ WITH CHECK (student_id = public.get_my_student_id());
 
 CREATE POLICY "Staff and Admin can manage transport details"
 ON public.transport_details FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- ACHIEVEMENTS
 CREATE POLICY "Students can view own achievements"
 ON public.achievements FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Students can manage own achievements"
@@ -716,15 +716,15 @@ WITH CHECK (student_id = public.get_my_student_id());
 
 CREATE POLICY "Staff and Admin can manage achievements"
 ON public.achievements FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- CERTIFICATIONS
 CREATE POLICY "Students can view own certifications"
 ON public.certifications FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Students can manage own certifications"
@@ -734,15 +734,15 @@ WITH CHECK (student_id = public.get_my_student_id());
 
 CREATE POLICY "Staff and Admin can manage certifications"
 ON public.certifications FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- ACTIVITIES
 CREATE POLICY "Students can view own activities"
 ON public.activities FOR SELECT TO authenticated
 USING (
     student_id = public.get_my_student_id()
-    OR public.get_my_role() IN ('STAFF', 'ADMIN')
+    OR public.get_my_role() = 'STAFF'
 );
 
 CREATE POLICY "Students can manage own activities"
@@ -752,17 +752,17 @@ WITH CHECK (student_id = public.get_my_student_id());
 
 CREATE POLICY "Staff and Admin can manage activities"
 ON public.activities FOR ALL TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'))
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- AUDIT LOGS
 CREATE POLICY "Staff and Admin can view audit logs"
 ON public.audit_logs FOR SELECT TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF');
 
 CREATE POLICY "Staff and Admin can insert audit logs"
 ON public.audit_logs FOR INSERT TO authenticated
-WITH CHECK (public.get_my_role() IN ('STAFF', 'ADMIN'));
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- SETTINGS
 CREATE POLICY "Authenticated users can view settings"
@@ -771,8 +771,8 @@ USING (true);
 
 CREATE POLICY "Only Admin can manage settings"
 ON public.settings FOR ALL TO authenticated
-USING (public.get_my_role() = 'ADMIN')
-WITH CHECK (public.get_my_role() = 'ADMIN');
+USING (public.get_my_role() = 'STAFF')
+WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- =========================================================
 -- 10. FUNCTION PRIVILEGES

@@ -1,8 +1,8 @@
 /**
- * ONE‑TIME BOOTSTRAP: creates the very first ADMIN account.
+ * ONE‑TIME BOOTSTRAP: creates the very first STAFF account.
  *
  * Why this script exists: /admin/accounts (the in-app "Create Account" page)
- * requires you to already be logged in as an ADMIN. The very first admin has
+ * requires you to already be logged in as a STAFF. The very first staff has
  * nowhere to be created from inside the app, so this script does it directly
  * against Supabase using the service‑role key.
  *
@@ -14,13 +14,13 @@
  *   node scripts/seed-admin.js <email> "<Full Name>" <password>
  *
  * Example:
- *   node scripts/seed-admin.js admin@yourcollege.edu "Department Admin" "Str0ng!Passw0rd"
+ *   node scripts/seed-admin.js staff@yourcollege.edu "Department Staff" "Str0ng!Passw0rd"
  *
  * Password rules (same as the rest of the app): at least 8 characters,
  * with an uppercase letter, a lowercase letter, and a number.
  *
- * Run this exactly once per admin you need to bootstrap this way. After
- * that, create any further admins from /admin/accounts while logged in
+ * Run this exactly once per staff you need to bootstrap this way. After
+ * that, create any further staff from /admin/accounts while logged in
  * as this one.
  */
 const fs = require('fs');
@@ -79,7 +79,7 @@ async function seedAdmin() {
     auth: { autoRefreshToken: false, persistSession: false },
   });
 
-  console.log(`\n--- Bootstrapping ADMIN account: ${email} ---`);
+  console.log(`\n--- Bootstrapping STAFF account: ${email} ---`);
 
   // Ensure no existing auth user with that email (prevent accidental overwrite)
   const { data: usersList, error: listErr } = await supabase.auth.admin.listUsers();
@@ -114,16 +114,16 @@ async function seedAdmin() {
     //    have role = 'ADMIN' and the user can access admin routes.
     const staffId = null;
 
-    // 3️⃣ Link via profiles.role = 'ADMIN'
+    // 3️⃣ Link via profiles.role = 'STAFF'
     const { error: profileErr } = await supabase.from('profiles').insert({
       user_id: authUserId,
-      role: 'ADMIN',
+      role: 'STAFF',
       staff_id: staffId,
     });
     if (profileErr) throw new Error(`Profile insert failed: ${profileErr.message}`);
-    console.log('✅ Profile linked with role=ADMIN');
+    console.log('✅ Profile linked with role=STAFF');
 
-    console.log('\n🎉 Admin bootstrap complete.');
+    console.log('\n🎉 Staff bootstrap complete.');
     console.log('You can now log in at /login with:');
     console.log(`   Email:    ${email}`);
     console.log(`   Password: (the one you supplied)`);

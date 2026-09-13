@@ -53,7 +53,7 @@ export default function DeleteBatchButton({ batchId, batchName }: DeleteBatchBut
             <div className="space-y-2">
               <h3 className="text-xl font-bold text-gray-900">Delete Batch</h3>
               <p className="text-sm text-gray-600">
-                This will permanently delete the batch <span className="font-bold text-gray-900">"{batchName}"</span> and remove its association from every student in it. This cannot be undone. Type <span className="font-bold text-gray-900">{batchName}</span> to confirm.
+                This will permanently delete the batch <span className="font-bold text-gray-900">&quot;{batchName}&quot;</span> and remove its association from every student in it. This cannot be undone. Type <span className="font-bold text-gray-900">{batchName}</span> to confirm.
               </p>
             </div>
 

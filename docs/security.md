@@ -16,12 +16,12 @@ The system is designed on the principle that the **Frontend is Untrusted**. No s
     - Tokens expire after 24 hours.
 
 ## 3. Authorization (RBAC)
-- **Role-Based Access**: Roles (`STUDENT`, `STAFF`, `ADMIN`) are assigned in the `AccessKeys` sheet.
+- **Role-Based Access**: Roles (`STUDENT`, `STAFF`) are assigned in the `AccessKeys` sheet.
 - **Server-Side Enforcement**: 
     - `Auth.authorize()` is called at the start of every request.
     - Students are strictly limited to rows where `RegisterNo == authenticatedUser.RegisterNo`.
     - Staff can only access specific verification and management functions.
-    - Admin has global read/write access.
+    - Staff has global read/write access.
 
 ## 4. Data Integrity & Validation
 - **Input Sanitization**: All inputs are treated as untrusted.
@@ -31,7 +31,7 @@ The system is designed on the principle that the **Frontend is Untrusted**. No s
 ## 5. Audit & Accountability
 - **Immutable Log**: Every sensitive operation (Login, Verification, Fee Update) is recorded in the `AuditLog` sheet.
 - **Traceability**: Logs include the UserID, Role, Timestamp, and the specific change made.
-- **Admin Review**: Admin can filter and review logs to detect suspicious patterns.
+- **Audit Review**: Staff can filter and review logs to detect suspicious patterns.
 
 ## 6. Infrastructure Security
 - **Private Database**: The Google Spreadsheet is not shared with anyone. It is accessed only via the GAS service account.

@@ -23,7 +23,7 @@ export default async function DashboardPage() {
     );
   }
 
-  if (profile.role === 'STAFF' || profile.role === 'ADMIN') {
+  if (profile.role === 'STAFF') {
     return <StaffDashboard profile={profile} />;
   }
 

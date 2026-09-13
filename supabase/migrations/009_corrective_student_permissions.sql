@@ -47,7 +47,7 @@ REVOKE INSERT ON TABLE public.profiles FROM authenticated;
 -- - public.get_my_role()       -> Returns 'STUDENT', 'STAFF', or 'ADMIN'.
 
 -- Macro for Student Ownership: (student_id = public.get_my_student_id())
--- Macro for Staff Access: (public.get_my_role() IN ('STAFF', 'ADMIN'))
+-- Macro for Staff Access: (public.get_my_role() = 'STAFF')
 
 -- ============================================================================================
 -- TABLE: academic_records
@@ -56,7 +56,7 @@ ALTER TABLE public.academic_records ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own academic records" ON public.academic_records;
 CREATE POLICY "Students can view own academic records" ON public.academic_records
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own academic records" ON public.academic_records;
 CREATE POLICY "Students can manage own academic records" ON public.academic_records
@@ -71,7 +71,7 @@ ALTER TABLE public.student_fee_details ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own fees" ON public.student_fee_details;
 CREATE POLICY "Students can view own fees" ON public.student_fee_details
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own fees" ON public.student_fee_details;
 CREATE POLICY "Students can manage own fees" ON public.student_fee_details
@@ -86,7 +86,7 @@ ALTER TABLE public.hostel_details ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own hostel details" ON public.hostel_details;
 CREATE POLICY "Students can view own hostel details" ON public.hostel_details
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own hostel details" ON public.hostel_details;
 CREATE POLICY "Students can manage own hostel details" ON public.hostel_details
@@ -101,7 +101,7 @@ ALTER TABLE public.transport_details ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own transport details" ON public.transport_details;
 CREATE POLICY "Students can view own transport details" ON public.transport_details
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own transport details" ON public.transport_details;
 CREATE POLICY "Students can manage own transport details" ON public.transport_details
@@ -116,7 +116,7 @@ ALTER TABLE public.achievements ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own achievements" ON public.achievements;
 CREATE POLICY "Students can view own achievements" ON public.achievements
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own achievements" ON public.achievements;
 CREATE POLICY "Students can manage own achievements" ON public.achievements
@@ -131,7 +131,7 @@ ALTER TABLE public.certifications ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own certifications" ON public.certifications;
 CREATE POLICY "Students can view own certifications" ON public.certifications
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own certifications" ON public.certifications;
 CREATE POLICY "Students can manage own certifications" ON public.certifications
@@ -146,7 +146,7 @@ ALTER TABLE public.activities ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own activities" ON public.activities;
 CREATE POLICY "Students can view own activities" ON public.activities
     FOR SELECT TO authenticated
-    USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF', 'ADMIN'));
+    USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can manage own activities" ON public.activities;
 CREATE POLICY "Students can manage own activities" ON public.activities

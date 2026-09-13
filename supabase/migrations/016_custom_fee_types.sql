@@ -32,7 +32,7 @@ CREATE POLICY "Staff and Admin full access to fee_types"
         EXISTS (
             SELECT 1 FROM public.profiles
             WHERE profiles.user_id = auth.uid()
-            AND profiles.role IN ('STAFF', 'ADMIN')
+            AND profiles.role = 'STAFF'
         )
     );
 

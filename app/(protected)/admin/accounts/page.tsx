@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 
 export default async function AdminAccountsPage() {
-  const profile = await requireRole(['ADMIN']);
+  const profile = await requireRole(['STAFF']);
   if (!profile) return redirect('/dashboard');
 
   const batches = await batchRepository.getAll();
@@ -22,10 +22,8 @@ export default async function AdminAccountsPage() {
         className="grid gap-4 max-w-lg">
         <label className="block">
           <span className="text-gray-700">Account Type *</span>
-          <select name="role" className="mt-1 block w-full" required defaultValue="STUDENT">
-            <option value="STUDENT">Student</option>
+          <select name="role" className="mt-1 block w-full" required defaultValue="STAFF">
             <option value="STAFF">Staff</option>
-            <option value="ADMIN">Admin</option>
           </select>
         </label>
         <label className="block">
@@ -35,22 +33,6 @@ export default async function AdminAccountsPage() {
         <label className="block">
           <span className="text-gray-700">College Email *</span>
           <input name="email" type="email" className="mt-1 block w-full" required />
-        </label>
-        {/* Student‑only fields */}
-        <label className="block">
-          <span className="text-gray-700">Register Number (Student only)</span>
-          <input name="registerNumber" type="text" className="mt-1 block w-full" />
-        </label>
-        <label className="block">
-          <span className="text-gray-700">Batch (Student only)</span>
-          <select name="batchId" className="mt-1 block w-full">
-            <option value="">-- Select Batch --</option>
-            {batches?.map((b: any) => (
-              <option key={b.id} value={b.id}>
-                {b.name}
-              </option>
-            ))}
-          </select>
         </label>
         {/* Staff/Admin optional fields */}
         <label className="block">

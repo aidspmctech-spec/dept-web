@@ -21,7 +21,8 @@ interface FeeSummaryProps {
 }
 
 export default function FeeSummary({ feeStructure, payments, hostelType, transportType }: FeeSummaryProps) {
-  if (!feeStructure) {
+  // 1. Guard against null, undefined, or empty array
+  if (!feeStructure || (Array.isArray(feeStructure) && feeStructure.length === 0)) {
     return (
       <div className="p-8 bg-orange-50 text-orange-700 rounded-xl border border-orange-200 text-center">
         <p className="font-medium">No official fee structure found for the selected year.</p>
@@ -30,36 +31,45 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
     );
   }
 
-  // If an array is provided (e.g., from the page), use the first element.
+  // 2. Normalize to a single object
   const actualFeeStructure = Array.isArray(feeStructure) ? feeStructure[0] : feeStructure;
 
+  // 3. Guard against the extracted object being null or undefined
+  if (!actualFeeStructure) {
+    return (
+      <div className="p-8 bg-orange-50 text-orange-700 rounded-xl border border-orange-200 text-center">
+        <p className="font-medium">No official fee structure found for the selected year.</p>
+        <p className="text-sm">Please contact the department office to have your fees assigned.</p>
+      </div>
+    );
+  }
 
-    const components = [
-      { key: 'TUITION', label: 'Tuition', field: 'tuition_fee' },
-      { key: 'HOSTEL', label: 'Hostel', field: 'hostel_fee', applicable: hostelType === 'Hosteller' },
-      { key: 'TRANSPORT', label: 'Transport', field: 'transport_fee', applicable: transportType === 'COLLEGE_BUS' },
-    ];
+  const components = [
+    { key: 'TUITION', label: 'Tuition', field: 'tuition_fee' },
+    { key: 'HOSTEL', label: 'Hostel', field: 'hostel_fee', applicable: hostelType === 'Hosteller' },
+    { key: 'TRANSPORT', label: 'Transport', field: 'transport_fee', applicable: transportType === 'COLLEGE_BUS' },
+  ];
 
-    const calculatePaid = (component: string) => {
-      return payments
-        .filter(p => p.fee_component === component)
-        .reduce((sum, p) => sum + p.amount, 0);
+  const calculatePaid = (component: string) => {
+    if (!payments || !Array.isArray(payments)) return 0;
+    return payments
+      .filter(p => p && p.fee_component === component)
+      .reduce((sum, p) => sum + (p?.amount || 0), 0);
+  };
+
+  const rows = components.filter(c => c.applicable === undefined || c.applicable).map(c => {
+    // Use optional chaining and explicit fallback to avoid crash
+    const required = (actualFeeStructure as any)?.[c.field] ?? 0;
+    const paid = calculatePaid(c.key);
+    const pending = Math.max(required - paid, 0);
+
+    return {
+      label: c.label,
+      required,
+      paid,
+      pending,
     };
-
-    const rows = components.filter(c => c.applicable === undefined || c.applicable).map(c => {
-      const required = actualFeeStructure[c.field as keyof FeeStructure] || 0;
-      const paid = calculatePaid(c.key);
-      const pending = Math.max(required - paid, 0);
-
-      return {
-        label: c.label,
-        required,
-        paid,
-        pending,
-      };
-    });
-
-
+  });
 
   const totalRequired = rows.reduce((sum, r) => sum + r.required, 0);
   const totalPaid = rows.reduce((sum, r) => sum + r.paid, 0);

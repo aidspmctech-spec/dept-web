@@ -2,13 +2,13 @@
 
 ## 1. Authentication
 - **Mechanism**: Migrated to Supabase Auth (JWT-based).
-- **Role Mapping**: A separate `profiles` table maps `auth.users` to `STUDENT`, `STAFF`, or `ADMIN`.
+- **Role Mapping**: A separate `profiles` table maps `auth.users` to `STUDENT` or `STAFF`.
 - **Verdict**: SECURE.
 
 ## 2. Authorization (RLS)
 - **Student Isolation**: Policies on `students`, `academic_records`, `fees`, etc., use `auth.uid()` to ensure students cannot access other students' data.
 - **Staff Access**: Staff roles are verified via a server-side function `get_my_role()`.
-- **Admin Access**: Global administrative privileges are restricted to the `ADMIN` role.
+- **Staff Access**: Global administrative privileges are restricted to the `STAFF` role.
 - **Verdict**: SECURE.
 
 ## 3. Secret Management

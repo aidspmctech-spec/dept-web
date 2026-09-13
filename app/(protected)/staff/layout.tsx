@@ -9,7 +9,7 @@ export default async function StaffLayout({
   children: React.ReactNode;
 }) {
   const profile = await getCurrentProfile();
-  if (!profile || (profile.role !== 'STAFF' && profile.role !== 'ADMIN')) {
+  if (!profile || profile.role !== 'STAFF') {
     redirect('/login');
   }
 
@@ -51,11 +51,11 @@ export default async function StaffLayout({
         <div className="p-4 border-t border-blue-900">
           <div className="flex items-center p-2 space-x-3">
             <div className="w-8 h-8 rounded-full bg-blue-500 flex items-center justify-center text-xs font-bold">
-              {profile.role === 'ADMIN' ? 'AD' : 'ST'}
+              ST
             </div>
             <div className="overflow-hidden">
               <p className="text-xs font-medium truncate">Admin User</p>
-              <p className="text-[10px] text-blue-300 uppercase">{profile.role}</p>
+              <p className="text-[10px] text-blue-300 uppercase">STAFF</p>
             </div>
           </div>
         </div>

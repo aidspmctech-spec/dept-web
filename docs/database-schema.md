@@ -17,7 +17,7 @@
 ## 2. AccessKeys
 - RegisterNo (PK, String)
 - SecretKeyHash (String)
-- Role (String: STUDENT, STAFF, ADMIN)
+- Role (String: STUDENT, STAFF)
 - Status (String: ACTIVE, BLOCKED)
 - LastLogin (Timestamp)
 - CreatedAt (Timestamp)

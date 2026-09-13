@@ -135,7 +135,7 @@ WITH CHECK (id = public.get_my_student_id());
 
 DROP POLICY IF EXISTS "Staff can view all students" ON public.students;
 CREATE POLICY "Staff can view all students" ON public.students FOR SELECT TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF');
 
 -- C. THE PROFILES TABLE (Identified by user_id)
 ALTER TABLE public.profiles ENABLE ROW LEVEL SECURITY;
@@ -146,7 +146,7 @@ WITH CHECK (user_id = auth.uid());
 
 DROP POLICY IF EXISTS "Staff can view all profiles" ON public.profiles;
 CREATE POLICY "Staff can view all profiles" ON public.profiles FOR SELECT TO authenticated
-USING (public.get_my_role() IN ('STAFF', 'ADMIN'));
+USING (public.get_my_role() = 'STAFF');
 
 -- D. REFERENCE TABLES (Global Read)
 DO $$

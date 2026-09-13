@@ -19,50 +19,90 @@ export default async function FeesPage({
 
   const supabase = await createClient();
 
-  // Fetch official fee structure (multiple rows now)
-  const { data: feeStructures } = await supabase
+  // Fetch official fee structure
+  let { data: feeStructures, error: feeStructuresError } = await supabase
     .from('fee_structures')
     .select('*')
     .eq('student_id', profile.student_id)
     .eq('academic_year', currentYear);
 
+  if (feeStructuresError) {
+    console.error('[FEES PAGE] Error fetching fee structures:', feeStructuresError.message);
+  }
+
+  // AUTOMATION: If no fee structure exists, generate one based on student details
+  if (!feeStructures || feeStructures.length === 0) {
+    try {
+      const { error: syncError } = await supabase.rpc('sync_student_fee_structure', {
+        p_student_id: profile.student_id,
+        p_academic_year: currentYear,
+      });
+
+      if (syncError) {
+        console.error('[FEES PAGE] Error auto-generating fee structure:', syncError.message);
+      } else {
+        const { data: syncedStructures } = await supabase
+          .from('fee_structures')
+          .select('*')
+          .eq('student_id', profile.student_id)
+          .eq('academic_year', currentYear);
+        feeStructures = syncedStructures || [];
+      }
+    } catch (err: any) {
+      console.error('[FEES PAGE] Unexpected error during fee automation:', err.message);
+    }
+  }
 
   // Fetch all payments for this student for the year
-  const { data: payments } = await supabase
+  const { data: payments, error: paymentsError } = await supabase
     .from('payments')
     .select('*')
     .eq('student_id', profile.student_id)
     .eq('academic_year', currentYear)
     .order('payment_date', { ascending: false });
 
+  if (paymentsError) {
+    console.error('[FEES PAGE] Error fetching payments:', paymentsError.message);
+  }
+
   // Fetch applicable custom fees
-  const { data: customFeeTypes } = await supabase
+  const { data: customFeeTypes, error: customFeeTypesError } = await supabase
     .from('fee_types')
     .select('*')
     .eq('academic_year', currentYear)
-    .filter('target_batch_id', 'is', null) // Simplification: handle complex targeting in a more robust way if needed
-    // Note: Real targeting requires JS filter or complex SQL.
-    // For now, we'll fetch all for the year and filter in JS.
+    .filter('target_batch_id', 'is', null)
     .order('name');
 
+  if (customFeeTypesError) {
+    console.error('[FEES PAGE] Error fetching custom fee types:', customFeeTypesError.message);
+  }
+
   // Fetch student type/transport for applicability logic
-  const { data: hostel } = await supabase
+  const { data: hostel, error: hostelError } = await supabase
     .from('hostel_details')
     .select('accommodation_type')
     .eq('student_id', profile.student_id)
     .maybeSingle();
 
-  const { data: transport } = await supabase
+  if (hostelError) {
+    console.error('[FEES PAGE] Error fetching hostel details:', hostelError.message);
+  }
+
+  const { data: transport, error: transportError } = await supabase
     .from('transport_details')
     .select('transport_type')
     .eq('student_id', profile.student_id)
     .maybeSingle();
 
+  if (transportError) {
+    console.error('[FEES PAGE] Error fetching transport details:', transportError.message);
+  }
+
   // Filter custom fees based on targeting
   const filteredCustomFees = customFeeTypes?.filter(cf => {
-    const batchMatch = !cf.target_batch_id || cf.target_batch_id === profile.batch_id; // Assuming batch_id is on profile
-    const sectionMatch = !cf.target_section || cf.target_section === profile.section; // Assuming section is on profile
-    const genderMatch = !cf.target_gender || cf.target_gender === profile.gender; // Assuming gender is on profile
+    const batchMatch = !cf.target_batch_id || cf.target_batch_id === profile.batch_id;
+    const sectionMatch = !cf.target_section || cf.target_section === profile.section;
+    const genderMatch = !cf.target_gender || cf.target_gender === profile.gender;
     return batchMatch && sectionMatch && genderMatch;
   }) || [];
 

@@ -67,7 +67,7 @@ export const getUserRole = cache(async () => {
 /**
  * AUTHORIZATION: Ensures the user is authenticated AND has one of the allowed roles.
  *
- * @param allowedRoles List of roles that can access the resource (e.g., ['STAFF', 'ADMIN']).
+ * @param allowedRoles List of roles that can access the resource (e.g., ['STAFF', 'STUDENT']).
  * @returns The profile if authorized, or redirects/returns null.
  */
 export async function requireRole(allowedRoles: string[]) {

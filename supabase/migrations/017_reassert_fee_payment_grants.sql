@@ -29,24 +29,24 @@ ALTER TABLE public.payments ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "Students can view own fees" ON public.fee_structures;
 CREATE POLICY "Students can view own fees" ON public.fee_structures
   FOR SELECT TO authenticated
-  USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF','ADMIN'));
+  USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Staff and Admin can manage fees" ON public.fee_structures;
 CREATE POLICY "Staff and Admin can manage fees" ON public.fee_structures
   FOR ALL TO authenticated
-  USING (public.get_my_role() IN ('STAFF','ADMIN'))
-  WITH CHECK (public.get_my_role() IN ('STAFF','ADMIN'));
+  USING (public.get_my_role() = 'STAFF')
+  WITH CHECK (public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Students can view own payments" ON public.payments;
 CREATE POLICY "Students can view own payments" ON public.payments
   FOR SELECT TO authenticated
-  USING (student_id = public.get_my_student_id() OR public.get_my_role() IN ('STAFF','ADMIN'));
+  USING (student_id = public.get_my_student_id() OR public.get_my_role() = 'STAFF');
 
 DROP POLICY IF EXISTS "Staff and Admin can manage payments" ON public.payments;
 CREATE POLICY "Staff and Admin can manage payments" ON public.payments
   FOR ALL TO authenticated
-  USING (public.get_my_role() IN ('STAFF','ADMIN'))
-  WITH CHECK (public.get_my_role() IN ('STAFF','ADMIN'));
+  USING (public.get_my_role() = 'STAFF')
+  WITH CHECK (public.get_my_role() = 'STAFF');
 
 -- Add policies for students to manage their own fee totals (self-reporting)
 DROP POLICY IF EXISTS "Students can manage own fee totals" ON public.fee_structures;

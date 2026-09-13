@@ -28,13 +28,11 @@ export default async function ProtectedLayout({
                   <li><Link href="/student/activities" className="block p-2 rounded hover:bg-white/10">Activities</Link></li>
                 </>
               )}
-              {(role === 'STAFF' || role === 'ADMIN') && (
+              {(role === 'STAFF') && (
                 <>
                   <li><Link href="/dashboard" className="block p-2 rounded hover:bg-white/10">Dashboard</Link></li>
                   <li><Link href="/staff/students" className="block p-2 rounded hover:bg-white/10">Manage Students</Link></li>
-                  {role === 'ADMIN' && (
-                    <li><Link href="/admin/logs" className="block p-2 rounded hover:bg-white/10">Audit Logs</Link></li>
-                  )}
+                  <li><Link href="/admin/logs" className="block p-2 rounded hover:bg-white/10">Audit Logs</Link></li>
                 </>
               )}
             </ul>

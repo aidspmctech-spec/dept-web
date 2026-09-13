@@ -94,7 +94,10 @@ export async function updateStudentProfile(formData: FormData) {
   if (formData.get('room_number')) hostelData.room_number = formData.get('room_number');
 
   if (Object.keys(hostelData).length > 0) {
-    const { error } = await supabase.from('hostel_details').upsert({ ...hostelData, student_id: studentId });
+    const { error } = await supabase.from('hostel_details').upsert(
+      { ...hostelData, student_id: studentId },
+      { onConflict: 'student_id' }
+    );
     if (error) throw error;
   }
 
@@ -106,7 +109,10 @@ export async function updateStudentProfile(formData: FormData) {
   if (formData.get('bus_number')) transportData.bus_number = formData.get('bus_number');
 
   if (Object.keys(transportData).length > 0) {
-    const { error } = await supabase.from('transport_details').upsert({ ...transportData, student_id: studentId });
+    const { error } = await supabase.from('transport_details').upsert(
+      { ...transportData, student_id: studentId },
+      { onConflict: 'student_id' }
+    );
     if (error) throw error;
   }
 
