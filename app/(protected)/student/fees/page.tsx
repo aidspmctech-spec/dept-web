@@ -44,7 +44,7 @@ export default async function FeesPage() {
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-[#1a365d] mb-2">Fees & Payments</h1>
-          <p className="text-gray-600">Enter your fee totals and submit payment installments. All payments are subject to verification.</p>
+          <p className="text-gray-600">Enter your fee totals and submit payment installments here.</p>
         </div >
       </div >
 

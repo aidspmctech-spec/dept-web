@@ -32,8 +32,6 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
         return 'bg-green-100 text-green-700';
       case 'REJECTED':
         return 'bg-red-100 text-red-700';
-      case 'PENDING_VERIFICATION':
-        return 'bg-yellow-100 text-yellow-700';
       default:
         return 'bg-gray-100 text-gray-700';
     }
@@ -57,11 +55,13 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
             {payments.map((payment, idx) => (
               <tr key={idx} className="text-sm hover:bg-gray-50 transition-colors">
                 <td className="py-3 px-2 text-gray-600">
-                  {new Date(payment.payment_date).toLocaleDateString('en-IN', {
-                    day: '2-digit',
-                    month: 'short',
-                    year: 'numeric',
-                  })}
+                  {(() => {
+                    const dateParts = payment.payment_date.split('-');
+                    if (dateParts.length !== 3) return payment.payment_date;
+                    const [year, month, day] = dateParts;
+                    const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return `${parseInt(day).toString().padStart(2, '0')} ${months[parseInt(month) - 1]} ${year}`;
+                  })()}
                 </td>
                 <td className="py-3 px-2 font-medium text-gray-700">
                   {payment.fee_component.charAt(0) + payment.fee_component.slice(1).toLowerCase()}
@@ -76,7 +76,7 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
                 </td>
                 <td className="py-3 px-2">
                   <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${getStatusBadge(payment.payment_status)}`}>
-                    {payment.payment_status.replace('_', ' ')}
+                    {payment.payment_status === 'VERIFIED' ? 'Paid' : payment.payment_status.replace('_', ' ')}
                   </span>
                 </td>
               </tr>

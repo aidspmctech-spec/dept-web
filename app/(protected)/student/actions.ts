@@ -68,15 +68,14 @@ export async function submitPayment(formData: FormData) {
   const amount = parseFloat(formData.get('amount') as string || '0');
   const rawMode = formData.get('mode') as string;
   const component = formData.get('component') as string;
+  const paymentDate = formData.get('date') as string;
 
-  // Normalize payment mode to uppercase to match database constraint
   const paymentModeMap: Record<string, string> = {
     'Cash': 'CASH',
     'Online': 'ONLINE',
     'DD': 'DD',
     'CASH': 'CASH',
     'ONLINE': 'ONLINE',
-    'ONLINE_MODE': 'ONLINE', // safety for any variations
   };
 
   const mode = paymentModeMap[rawMode] || (rawMode?.toUpperCase() === 'CASH' || rawMode?.toUpperCase() === 'ONLINE' || rawMode?.toUpperCase() === 'DD' ? rawMode.toUpperCase() : null);
@@ -85,21 +84,27 @@ export async function submitPayment(formData: FormData) {
     throw new Error(`Invalid payment mode: ${rawMode}`);
   }
 
+  if (!paymentDate) {
+    throw new Error('Please enter the fee payment date.');
+  }
+
   if (amount <= 0) {
     throw new Error('Payment amount must be greater than 0');
   }
 
+  const paymentData = {
+    student_id: studentId,
+    academic_year: '2024-2025',
+    fee_component: component,
+    amount: amount,
+    payment_mode: mode,
+    payment_status: 'VERIFIED',
+    payment_date: paymentDate,
+  };
+
   const { error } = await supabase
     .from('payments')
-    .insert({
-      student_id: studentId,
-      academic_year: '2024-2025',
-      fee_component: component,
-      amount: amount,
-      payment_mode: mode,
-      payment_status: 'PENDING_VERIFICATION',
-      payment_date: new Date().toISOString(),
-    });
+    .insert(paymentData);
 
   if (error) throw error;
 
@@ -133,14 +138,23 @@ export async function updateStudentProfile(formData: FormData) {
   }
 
   // 2. Update Hostel Details
-  const accommodationType = formData.get('accommodation_type');
+  const rawAccommodationType = formData.get('accommodation_type') as string;
+
+  const accommodationTypeMap: Record<string, string | null> = {
+    '': null,
+    'Hosteller': 'Hosteller',
+    'Day Scholar': 'Day Scholar',
+  };
+
+  const accommodationType = rawAccommodationType ? (accommodationTypeMap[rawAccommodationType] ?? null) : null;
   const hostelData: any = {};
-  if (accommodationType !== null) {
+
+  if (accommodationType !== undefined) {
     hostelData.accommodation_type = accommodationType;
     if (accommodationType === 'Day Scholar') {
       hostelData.hostel_name = '';
       hostelData.room_number = '';
-    } else {
+    } else if (accommodationType === 'Hosteller') {
       if (formData.get('hostel_name')) hostelData.hostel_name = formData.get('hostel_name');
       if (formData.get('room_number')) hostelData.room_number = formData.get('room_number');
     }
@@ -155,9 +169,20 @@ export async function updateStudentProfile(formData: FormData) {
   }
 
   // 3. Update Transport Details
+  const rawTransportType = formData.get('transport_type') as string;
+
+  const transportTypeMap: Record<string, string | null> = {
+    '': null,
+    'OUTBUS': 'OUTBUS',
+    'COLLEGE_BUS': 'COLLEGE_BUS',
+    'Outbus': 'OUTBUS',
+    'College Bus': 'COLLEGE_BUS',
+  };
+
+  const transportType = rawTransportType ? (transportTypeMap[rawTransportType] ?? null) : null;
   const transportData: any = {};
-  const transportType = formData.get('transport_type');
-  if (transportType !== null) {
+
+  if (transportType !== undefined) {
     transportData.transport_type = transportType;
     if (transportType === 'COLLEGE_BUS') {
       if (formData.get('route')) transportData.route = formData.get('route');

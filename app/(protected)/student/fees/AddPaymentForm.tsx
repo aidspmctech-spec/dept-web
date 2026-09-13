@@ -16,7 +16,7 @@ export default function AddPaymentForm({ academicYear, hostelType, transportType
   const [formData, setFormData] = useState({
     feeComponent: 'TUITION',
     amount: '',
-    paymentDate: new Date().toISOString().split('T')[0],
+    paymentDate: '',
     paymentMode: 'ONLINE',
     transactionReference: '',
   });
@@ -32,10 +32,10 @@ export default function AddPaymentForm({ academicYear, hostelType, transportType
 
     const data = new FormData();
     data.append('academicYear', academicYear);
-    data.append('feeComponent', formData.feeComponent);
+    data.append('component', formData.feeComponent);
     data.append('amount', formData.amount);
-    data.append('paymentDate', formData.paymentDate);
-    data.append('paymentMode', formData.paymentMode);
+    data.append('date', formData.paymentDate);
+    data.append('mode', formData.paymentMode);
     data.append('transactionReference', formData.transactionReference);
 
     try {
@@ -44,6 +44,7 @@ export default function AddPaymentForm({ academicYear, hostelType, transportType
       setFormData(prev => ({
         ...prev,
         amount: '',
+        paymentDate: '',
         transactionReference: '',
       }));
     } catch (err: any) {
