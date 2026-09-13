@@ -18,47 +18,92 @@ async function verifyStudentOwnership(studentId: string | null) {
 }
 
 /**
- * Submits a fee payment using the secure submit_student_payment RPC.
+ * Updates the student's reported fee totals for the current academic year.
  */
-export async function submitPayment(formData: FormData) {
+export async function updateFeeTotals(formData: FormData) {
   const profile = await getCurrentProfile();
-  if (!profile || !profile.student_id) throw new Error('Profile not found');
+
+  if (!profile || profile.role !== 'STUDENT' || !profile.student_id) {
+    throw new Error('Unauthorized');
+  }
 
   const studentId = profile.student_id;
   const supabase = await createClient();
 
-  const academicYear = formData.get('academicYear') as string;
-  const feeComponent = formData.get('feeComponent') as string;
-  const amount = parseFloat(formData.get('amount') as string) || 0;
-  const paymentDate = formData.get('paymentDate') as string;
-  const paymentMode = formData.get('paymentMode') as string;
-  const transactionReference = formData.get('transactionReference') as string;
+  const tuitionTotal = parseFloat(formData.get('tuitionTotal') as string || '0');
+  const hostelTotal = parseFloat(formData.get('hostelTotal') as string || '0');
+  const busTotal = parseFloat(formData.get('busTotal') as string || '0');
 
-  if (!academicYear) throw new Error('Academic year is required');
-  if (!feeComponent) throw new Error('Fee component is required');
-  if (amount <= 0) throw new Error('Payment amount must be greater than zero');
-  if (!paymentDate) throw new Error('Payment date is required');
-  if (!paymentMode) throw new Error('Payment mode is required');
+  const currentYear = '2024-2025';
 
-  if (paymentMode !== 'CASH' && !transactionReference) {
-    throw new Error(`Transaction reference is required for ${paymentMode} payments`);
-  }
-
-  const { error } = await supabase.rpc('submit_student_payment', {
-    p_student_id: studentId,
-    p_academic_year: academicYear,
-    p_fee_component: feeComponent,
-    p_amount: amount,
-    p_payment_date: paymentDate,
-    p_payment_mode: paymentMode,
-    p_transaction_reference: transactionReference,
-  });
+  const { error } = await supabase
+    .from('fee_structures')
+    .upsert({
+      student_id: studentId,
+      academic_year: currentYear,
+      tuition_fee: tuitionTotal,
+      hostel_fee: hostelTotal,
+      transport_fee: busTotal,
+      updated_at: new Date().toISOString(),
+    }, { onConflict: 'student_id,academic_year' });
 
   if (error) throw error;
 
   revalidatePath('/student/fees');
-  revalidatePath('/dashboard');
-  return { success: true };
+}
+
+/**
+ * Submits a new fee payment installment.
+ */
+export async function submitPayment(formData: FormData) {
+  const profile = await getCurrentProfile();
+
+  if (!profile || profile.role !== 'STUDENT' || !profile.student_id) {
+    throw new Error('Unauthorized');
+  }
+
+  const studentId = profile.student_id;
+  const supabase = await createClient();
+
+  const amount = parseFloat(formData.get('amount') as string || '0');
+  const rawMode = formData.get('mode') as string;
+  const component = formData.get('component') as string;
+
+  // Normalize payment mode to uppercase to match database constraint
+  const paymentModeMap: Record<string, string> = {
+    'Cash': 'CASH',
+    'Online': 'ONLINE',
+    'DD': 'DD',
+    'CASH': 'CASH',
+    'ONLINE': 'ONLINE',
+    'ONLINE_MODE': 'ONLINE', // safety for any variations
+  };
+
+  const mode = paymentModeMap[rawMode] || (rawMode?.toUpperCase() === 'CASH' || rawMode?.toUpperCase() === 'ONLINE' || rawMode?.toUpperCase() === 'DD' ? rawMode.toUpperCase() : null);
+
+  if (!mode) {
+    throw new Error(`Invalid payment mode: ${rawMode}`);
+  }
+
+  if (amount <= 0) {
+    throw new Error('Payment amount must be greater than 0');
+  }
+
+  const { error } = await supabase
+    .from('payments')
+    .insert({
+      student_id: studentId,
+      academic_year: '2024-2025',
+      fee_component: component,
+      amount: amount,
+      payment_mode: mode,
+      payment_status: 'PENDING_VERIFICATION',
+      payment_date: new Date().toISOString(),
+    });
+
+  if (error) throw error;
+
+  revalidatePath('/student/fees');
 }
 
 /**
@@ -88,10 +133,18 @@ export async function updateStudentProfile(formData: FormData) {
   }
 
   // 2. Update Hostel Details
+  const accommodationType = formData.get('accommodation_type');
   const hostelData: any = {};
-  if (formData.get('accommodation_type')) hostelData.accommodation_type = formData.get('accommodation_type');
-  if (formData.get('hostel_name')) hostelData.hostel_name = formData.get('hostel_name');
-  if (formData.get('room_number')) hostelData.room_number = formData.get('room_number');
+  if (accommodationType !== null) {
+    hostelData.accommodation_type = accommodationType;
+    if (accommodationType === 'Day Scholar') {
+      hostelData.hostel_name = '';
+      hostelData.room_number = '';
+    } else {
+      if (formData.get('hostel_name')) hostelData.hostel_name = formData.get('hostel_name');
+      if (formData.get('room_number')) hostelData.room_number = formData.get('room_number');
+    }
+  }
 
   if (Object.keys(hostelData).length > 0) {
     const { error } = await supabase.from('hostel_details').upsert(
@@ -104,9 +157,16 @@ export async function updateStudentProfile(formData: FormData) {
   // 3. Update Transport Details
   const transportData: any = {};
   const transportType = formData.get('transport_type');
-  if (transportType !== null) transportData.transport_type = transportType;
-  if (formData.get('route')) transportData.route = formData.get('route');
-  if (formData.get('bus_number')) transportData.bus_number = formData.get('bus_number');
+  if (transportType !== null) {
+    transportData.transport_type = transportType;
+    if (transportType === 'COLLEGE_BUS') {
+      if (formData.get('route')) transportData.route = formData.get('route');
+      if (formData.get('bus_number')) transportData.bus_number = formData.get('bus_number');
+    } else {
+      transportData.route = '';
+      transportData.bus_number = '';
+    }
+  }
 
   if (Object.keys(transportData).length > 0) {
     const { error } = await supabase.from('transport_details').upsert(
@@ -189,11 +249,4 @@ export async function addActivity(formData: FormData) {
 
   revalidatePath('/student/activities');
   revalidatePath('/dashboard');
-}
-
-/**
- * Placeholder for fee details update – not part of current task.
- */
-export async function updateFeeDetails(formData: FormData) {
-  return { success: true };
 }

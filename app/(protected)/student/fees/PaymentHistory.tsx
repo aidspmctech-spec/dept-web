@@ -7,7 +7,8 @@ interface Payment {
   academic_year: string;
   fee_component: 'TUITION' | 'TRANSPORT' | 'HOSTEL';
   amount: number;
-  payment_mode: 'CASH' | 'ONLINE' | 'DD';
+  payment_mode: 'Cash' | 'Online' | 'DD' | 'CASH' | 'ONLINE';
+  payment_status: string;
   transaction_reference: string | null;
 }
 
@@ -20,10 +21,23 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
     return (
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 text-center">
         <h3 className="text-xl font-bold text-[#1a365d] mb-4">Payment History</h3>
-        <p className="text-gray-500">No payment records found for the selected year.</p>
+        <p className="text-gray-500">No payment records found for the current year.</p>
       </div>
     );
   }
+
+  const getStatusBadge = (status: string) => {
+    switch (status) {
+      case 'VERIFIED':
+        return 'bg-green-100 text-green-700';
+      case 'REJECTED':
+        return 'bg-red-100 text-red-700';
+      case 'PENDING_VERIFICATION':
+        return 'bg-yellow-100 text-yellow-700';
+      default:
+        return 'bg-gray-100 text-gray-700';
+    }
+  };
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
@@ -36,7 +50,7 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
               <th className="py-3 px-2">Component</th>
               <th className="py-3 px-2 text-right">Amount</th>
               <th className="py-3 px-2">Mode</th>
-              <th className="py-3 px-2">Reference</th>
+              <th className="py-3 px-2">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -56,15 +70,14 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
                   ₹{payment.amount.toLocaleString()}
                 </td>
                 <td className="py-3 px-2">
-                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${
-                    payment.payment_mode === 'ONLINE' ? 'bg-blue-100 text-blue-700' :
-                    payment.payment_mode === 'CASH' ? 'bg-green-100 text-green-700' : 'bg-orange-100 text-orange-700'
-                  }`}>
+                  <span className="px-2 py-1 rounded-full text-[10px] font-bold uppercase bg-gray-100 text-gray-700">
                     {payment.payment_mode}
                   </span>
                 </td>
-                <td className="py-3 px-2 text-xs text-gray-500 font-mono">
-                  {payment.transaction_reference || '-'}
+                <td className="py-3 px-2">
+                  <span className={`px-2 py-1 rounded-full text-[10px] font-bold uppercase ${getStatusBadge(payment.payment_status)}`}>
+                    {payment.payment_status.replace('_', ' ')}
+                  </span>
                 </td>
               </tr>
             ))}

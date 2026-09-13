@@ -11,6 +11,7 @@ interface FeeStructure {
 interface Payment {
   amount: number;
   fee_component: 'TUITION' | 'TRANSPORT' | 'HOSTEL';
+  payment_status: string;
 }
 
 interface FeeSummaryProps {
@@ -21,25 +22,22 @@ interface FeeSummaryProps {
 }
 
 export default function FeeSummary({ feeStructure, payments, hostelType, transportType }: FeeSummaryProps) {
-  // 1. Guard against null, undefined, or empty array
   if (!feeStructure || (Array.isArray(feeStructure) && feeStructure.length === 0)) {
     return (
       <div className="p-8 bg-orange-50 text-orange-700 rounded-xl border border-orange-200 text-center">
-        <p className="font-medium">No official fee structure found for the selected year.</p>
-        <p className="text-sm">Please contact the department office to have your fees assigned.</p>
+        <p className="font-medium">No fee totals entered yet.</p>
+        <p className="text-sm">Please enter your required fee totals in the form to the right.</p>
       </div>
     );
   }
 
-  // 2. Normalize to a single object
   const actualFeeStructure = Array.isArray(feeStructure) ? feeStructure[0] : feeStructure;
 
-  // 3. Guard against the extracted object being null or undefined
   if (!actualFeeStructure) {
     return (
       <div className="p-8 bg-orange-50 text-orange-700 rounded-xl border border-orange-200 text-center">
-        <p className="font-medium">No official fee structure found for the selected year.</p>
-        <p className="text-sm">Please contact the department office to have your fees assigned.</p>
+        <p className="font-medium">No fee totals entered yet.</p>
+        <p className="text-sm">Please enter your required fee totals in the form to the right.</p>
       </div>
     );
   }
@@ -53,12 +51,11 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
   const calculatePaid = (component: string) => {
     if (!payments || !Array.isArray(payments)) return 0;
     return payments
-      .filter(p => p && p.fee_component === component)
+      .filter(p => p && p.fee_component === component && p.payment_status === 'VERIFIED')
       .reduce((sum, p) => sum + (p?.amount || 0), 0);
   };
 
   const rows = components.filter(c => c.applicable === undefined || c.applicable).map(c => {
-    // Use optional chaining and explicit fallback to avoid crash
     const required = (actualFeeStructure as any)?.[c.field] ?? 0;
     const paid = calculatePaid(c.key);
     const pending = Math.max(required - paid, 0);
@@ -77,16 +74,16 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
-      <h3 className="text-xl font-bold text-[#1a365d]">Fee Summary</h3>
+      <h3 className="text-xl font-bold text-[#1a365d]">Fee Summary (Verified)</h3>
 
       <div className="overflow-x-auto">
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="text-xs font-semibold text-gray-500 uppercase border-b">
               <th className="py-3 px-2">Component</th>
-              <th className="py-3 px-2 text-right">Required</th>
+              <th className="py-3 px-2 text-right">Total Fee</th>
               <th className="py-3 px-2 text-right">Paid</th>
-              <th className="py-3 px-2 text-right">Pending</th>
+              <th className="py-3 px-2 text-right">Balance</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
