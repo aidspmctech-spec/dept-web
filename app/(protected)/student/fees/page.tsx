@@ -39,6 +39,12 @@ export default async function FeesPage() {
     .eq('student_id', profile.student_id)
     .maybeSingle();
 
+  // 4. Fetch Custom Fee Assignments
+  const { data: customFees } = await supabase
+    .from('custom_fee_assignments')
+    .select('*, custom_fee_definitions(fee_name, amount, description)')
+    .eq('student_id', profile.student_id);
+
   return (
     <div className="max-w-5xl mx-auto space-y-8">
       <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -53,6 +59,7 @@ export default async function FeesPage() {
         initialPayments={payments || []}
         initialHostelType={hostel?.accommodation_type}
         initialTransportType={transport?.transport_type}
+        initialCustomFees={customFees || []}
       />
     </div >
   );

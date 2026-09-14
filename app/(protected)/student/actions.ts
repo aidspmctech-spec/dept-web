@@ -92,21 +92,75 @@ export async function submitPayment(formData: FormData) {
     throw new Error('Payment amount must be greater than 0');
   }
 
-  const paymentData = {
-    student_id: studentId,
-    academic_year: '2024-2025',
-    fee_component: component,
-    amount: amount,
-    payment_mode: mode,
-    payment_status: 'VERIFIED',
-    payment_date: paymentDate,
-  };
+  if (component.startsWith('custom:')) {
+    const assignmentId = component.split(':')[1];
 
-  const { error } = await supabase
-    .from('payments')
-    .insert(paymentData);
+    // 1. Verify the assignment exists and belongs to the student
+    const { data: assignment, error: assignError } = await supabase
+      .from('custom_fee_assignments')
+      .select('custom_fee_id, assigned_amount, paid_amount')
+      .eq('id', assignmentId)
+      .eq('student_id', studentId)
+      .single();
 
-  if (error) throw error;
+    if (assignError || !assignment) {
+      throw new Error('Invalid custom fee assignment.');
+    }
+
+    const pendingAmount = assignment.assigned_amount - assignment.paid_amount;
+    if (amount > pendingAmount) {
+      throw new Error(`Payment exceeds pending amount. Maximum allowed: ₹${pendingAmount}`);
+    }
+
+    // 2. Record the payment
+    const { error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        student_id: studentId,
+        academic_year: '2024-2025',
+        fee_component: 'CUSTOM',
+        fee_type_id: assignment.custom_fee_id,
+        amount: amount,
+        payment_mode: mode,
+        payment_status: 'VERIFIED',
+        payment_date: paymentDate,
+      });
+
+    if (paymentError) throw paymentError;
+
+    // 3. Update the assignment record
+    const newPaidAmount = assignment.paid_amount + amount;
+    const newStatus = newPaidAmount >= assignment.assigned_amount ? 'PAID' : 'PENDING';
+
+    const { error: updateError } = await supabase
+      .from('custom_fee_assignments')
+      .update({
+        paid_amount: newPaidAmount,
+        payment_status: newStatus,
+        paid_at: new Date().toISOString(),
+      })
+      .eq('id', assignmentId);
+
+    if (updateError) throw updateError;
+
+  } else {
+    // Standard payment logic for TUITION, TRANSPORT, HOSTEL
+    const paymentData = {
+      student_id: studentId,
+      academic_year: '2024-2025',
+      fee_component: component,
+      amount: amount,
+      payment_mode: mode,
+      payment_status: 'VERIFIED',
+      payment_date: paymentDate,
+    };
+
+    const { error: paymentError } = await supabase
+      .from('payments')
+      .insert(paymentData);
+
+    if (paymentError) throw paymentError;
+  }
 
   revalidatePath('/student/fees');
 }

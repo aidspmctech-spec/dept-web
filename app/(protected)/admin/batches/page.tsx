@@ -9,7 +9,8 @@ export default async function BatchesPage() {
   const profile = await requireRole(['STAFF']);
   if (!profile) return redirect('/dashboard');
 
-  const batches = await batchRepository.getAll();
+  const rawBatches = await batchRepository.getAll();
+  const batches = rawBatches?.filter(b => b && b.id && b.name) || [];
 
   return (
     <div className="space-y-8">
@@ -17,7 +18,7 @@ export default async function BatchesPage() {
         <h1 className="text-3xl font-bold text-[#1a365d]">Batch Management</h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
         {/* Create Batch Form */}
         <CreateBatchForm />
 

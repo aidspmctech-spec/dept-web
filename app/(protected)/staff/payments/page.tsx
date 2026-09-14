@@ -15,7 +15,7 @@ export default async function StaffPaymentsPage({
 
   let query = supabase
     .from('payments')
-    .select('*, students!inner(name, register_number, batch_id, section)')
+    .select('*, students!inner(name, register_number, batch_id, section, batches(name))')
     .order('created_at', { ascending: false });
 
   if (batch) {
@@ -55,7 +55,7 @@ export default async function StaffPaymentsPage({
       <div className="flex justify-between items-center gap-4">
         <DataFilterBar
           batches={batches}
-          sections={['A', 'B', 'C']}
+          sections={['A', 'B']}
           currentBatch={batch}
           currentSection={section}
         />

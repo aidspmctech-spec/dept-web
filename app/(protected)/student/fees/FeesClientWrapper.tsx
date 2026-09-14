@@ -10,16 +10,19 @@ interface FeesClientWrapperProps {
   initialPayments: any[];
   initialHostelType?: string;
   initialTransportType?: string;
+  initialCustomFees?: any[];
 }
 
 export default function FeesClientWrapper({
   initialFeeStructure,
   initialPayments,
   initialHostelType,
-  initialTransportType
+  initialTransportType,
+  initialCustomFees = [],
 }: FeesClientWrapperProps) {
   const [feeStructure, setFeeStructure] = useState(initialFeeStructure);
   const [payments, setPayments] = useState(initialPayments);
+  const [customFees, setCustomFees] = useState(initialCustomFees);
 
   // We use a simple state to track "draft" changes in the form for live updates
   const [draftTotals, setDraftTotals] = useState({
@@ -44,18 +47,24 @@ export default function FeesClientWrapper({
           payments={payments}
           hostelType={initialHostelType}
           transportType={initialTransportType}
+          customFees={customFees}
         />
         <PaymentHistory payments={payments} />
       </div >
       <div className="lg:col-span-1">
         <FeeForm
           initialData={{
-            student_type: initialHostelType,
-            transport_type: initialTransportType,
+            student_type: initialHostelType ?? null,
+            transport_type: initialTransportType ?? null,
             tuition_total: draftTotals.tuition_fee,
+            tuition_paid: 0,
             hostel_total: draftTotals.hostel_fee,
+            hostel_paid: 0,
             bus_total: draftTotals.transport_fee,
+            bus_paid: 0,
+            customFees: customFees,
           }}
+          customFeeDefinitions={customFees.map(cf => cf.custom_fee_definitions)}
           onTotalChange={(newTotals) => setDraftTotals(newTotals)}
           onPaymentSuccess={() => {
             // In a real app, we might fetch updated payments here

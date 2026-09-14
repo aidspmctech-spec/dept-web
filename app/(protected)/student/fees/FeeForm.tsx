@@ -5,7 +5,7 @@ import { updateFeeTotals, submitPayment } from '../actions';
 
 interface FeeFormProps {
   initialData?: {
-    student_type: string;
+    student_type: string | null;
     transport_type: string | null;
     tuition_total: number;
     tuition_paid: number;
@@ -76,6 +76,41 @@ export default function FeeForm({ initialData, onTotalChange, onPaymentSuccess }
     e.preventDefault();
     setIsSubmitting(true);
     setMessage(null);
+
+    // Custom Fee Validation
+    if (payment.component.startsWith('custom:')) {
+      const assignmentId = payment.component.split(':')[1];
+      const assignment = initialData?.customFees?.find(cf => cf.id === assignmentId);
+
+      if (!assignment) {
+        setMessage({ type: 'error', text: 'Invalid custom fee selected.' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      const pending = assignment.assigned_amount - assignment.paid_amount;
+      const amountPaid = parseFloat(payment.amount);
+
+      if (isNaN(amountPaid) || amountPaid <= 0) {
+        setMessage({ type: 'error', text: 'Payment amount must be greater than 0.' });
+        setIsSubmitting(false);
+        return;
+      }
+
+      if (amountPaid > pending) {
+        setMessage({ type: 'error', text: `Payment exceeds pending amount. Maximum allowed: ₹${pending}` });
+        setIsSubmitting(false);
+        return;
+      }
+    } else {
+      // Standard validation for Tuition/Hostel/Transport
+      const amountPaid = parseFloat(payment.amount);
+      if (isNaN(amountPaid) || amountPaid <= 0) {
+        setMessage({ type: 'error', text: 'Payment amount must be greater than 0.' });
+        setIsSubmitting(false);
+        return;
+      }
+    }
 
     const formData = new FormData();
     formData.append('amount', payment.amount);
@@ -208,6 +243,17 @@ export default function FeeForm({ initialData, onTotalChange, onPaymentSuccess }
               <option value="TUITION">Tuition Fee</option>
               {isHosteller && <option value="HOSTEL">Hostel Fee</option>}
               {isBusUser && <option value="TRANSPORT">Bus Fee</option>}
+              {initialData?.customFees && initialData.customFees.length > 0 && (
+                <>
+                  <optgroup label="Custom Fees">
+                    {initialData.customFees.map(cf => (
+                      <option key={cf.id} value={`custom:${cf.id}`}>
+                        {cf.custom_fee_definitions?.fee_name || 'Custom Fee'}
+                      </option>
+                    ))}
+                  </optgroup>
+                </>
+              )}
             </select>
           </div>
         </div>

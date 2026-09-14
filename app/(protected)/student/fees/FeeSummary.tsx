@@ -10,8 +10,16 @@ interface FeeStructure {
 
 interface Payment {
   amount: number;
-  fee_component: 'TUITION' | 'TRANSPORT' | 'HOSTEL';
+  fee_component: string;
   payment_status: string;
+}
+
+interface CustomFeeAssignment {
+  assigned_amount: number;
+  paid_amount: number;
+  custom_fee_definitions: {
+    fee_name: string;
+  };
 }
 
 interface FeeSummaryProps {
@@ -19,9 +27,10 @@ interface FeeSummaryProps {
   payments: Payment[];
   hostelType?: string;
   transportType?: string;
+  customFees?: CustomFeeAssignment[];
 }
 
-export default function FeeSummary({ feeStructure, payments, hostelType, transportType }: FeeSummaryProps) {
+export default function FeeSummary({ feeStructure, payments, hostelType, transportType, customFees = [] }: FeeSummaryProps) {
   if (!feeStructure || (Array.isArray(feeStructure) && feeStructure.length === 0)) {
     return (
       <div className="p-8 bg-orange-50 text-orange-700 rounded-xl border border-orange-200 text-center">
@@ -68,9 +77,19 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
     };
   });
 
-  const totalRequired = rows.reduce((sum, r) => sum + r.required, 0);
-  const totalPaid = rows.reduce((sum, r) => sum + r.paid, 0);
-  const totalBalance = rows.reduce((sum, r) => sum + r.balance, 0);
+  // Add Custom Fees to the rows
+  const customRows = customFees.map(cf => ({
+    label: cf.custom_fee_definitions?.fee_name || 'Custom Fee',
+    required: cf.assigned_amount,
+    paid: cf.paid_amount,
+    balance: Math.max(cf.assigned_amount - cf.paid_amount, 0),
+  }));
+
+  const allRows = [...rows, ...customRows];
+
+  const totalRequired = allRows.reduce((sum, r) => sum + r.required, 0);
+  const totalPaid = allRows.reduce((sum, r) => sum + r.paid, 0);
+  const totalBalance = allRows.reduce((sum, r) => sum + r.balance, 0);
 
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
@@ -87,8 +106,8 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
-            {rows.map(row => (
-              <tr key={row.label} className="text-sm">
+            {allRows.map((row, idx) => (
+              <tr key={idx} className="text-sm">
                 <td className="py-4 px-2 font-medium text-gray-700">{row.label}</td>
                 <td className="py-4 px-2 text-right">₹{row.required.toLocaleString()}</td>
                 <td className="py-4 px-2 text-right text-green-600">₹{row.paid.toLocaleString()}</td>

@@ -16,7 +16,7 @@ export default async function StaffAcademicsPage({
 
   let query = supabase
     .from('academic_records')
-    .select('*, students!inner(name, register_number, batch_id, section)')
+    .select('*, students!inner(name, register_number, batch_id, section, batches(name))')
     .order('student_id');
 
   if (batch) {
@@ -40,6 +40,8 @@ export default async function StaffAcademicsPage({
   const exportData = records.map(rec => ({
     'Student Name': rec.students?.name,
     'Register No': rec.students?.register_number,
+    'Batch': rec.students?.batches?.name || 'N/A',
+    'Section': rec.students?.section,
     'Year': rec.academic_year,
     'Semester': rec.semester,
     'SGPA': rec.sgpa || '-',
@@ -56,7 +58,7 @@ export default async function StaffAcademicsPage({
       <div className="flex justify-between items-center gap-4">
         <DataFilterBar
           batches={batches}
-          sections={['A', 'B', 'C']}
+          sections={['A', 'B']}
           currentBatch={batch}
           currentSection={section}
         />

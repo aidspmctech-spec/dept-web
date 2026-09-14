@@ -4,6 +4,7 @@ import { batchRepository } from '@/lib/repositories/batchRepository';
 import { studentRepository } from '@/lib/repositories/studentRepository';
 import DataFilterBar from '../components/DataFilterBar';
 import ExportExcelButton from '../components/ExportExcelButton';
+import DeleteStudentButton from './DeleteStudentButton';
 
 export default async function StudentsPage({
   searchParams,
@@ -74,7 +75,7 @@ export default async function StudentsPage({
         <div className="flex justify-between items-center gap-4">
           <DataFilterBar
             batches={batches}
-            sections={['A', 'B', 'C']} // Assuming standard sections
+            sections={['A', 'B']} // Assuming standard sections
             currentBatch={batch}
             currentSection={section}
           />
@@ -113,13 +114,14 @@ export default async function StudentsPage({
                       {student.status}
                     </span>
                   </td>
-                  <td className="px-6 py-4 text-right">
+                  <td className="px-6 py-4 text-right flex justify-end gap-4">
                     <Link
                       href={`/staff/students/${student.id}`}
                       className="text-blue-600 hover:text-blue-800 font-medium"
                     >
                       View Profile
                     </Link>
+                    <DeleteStudentButton studentId={student.id} studentName={student.name} />
                   </td>
                 </tr>
               ))

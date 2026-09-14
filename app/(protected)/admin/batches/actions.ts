@@ -140,19 +140,6 @@ export async function deleteBatch(formData: FormData) {
   if (!profile) throw new Error('Unauthorized');
 
   try {
-    const adminSupabase = createAdminClient();
-
-    // Pre-check: Count students assigned to this batch
-    const { count, error: countError } = await adminSupabase
-      .from('students')
-      .select('*', { count: 'exact', head: true })
-      .eq('batch_id', id);
-
-    if (countError) throw countError;
-    if (count && count > 0) {
-      throw new Error(`Cannot delete: ${count} students are still assigned to this batch. Reassign or remove them first.`);
-    }
-
     await batchRepository.delete(id);
     revalidatePath('/admin/batches');
     return { success: true };

@@ -15,7 +15,7 @@ export default async function StaffCertificationsPage({
 
   let query = supabase
     .from('certifications')
-    .select('*, students!inner(name, register_number, batch_id, section)')
+    .select('*, students!inner(name, register_number, batch_id, section, batches(name))')
     .order('completion_date', { ascending: false });
 
   if (batch) {
@@ -54,7 +54,7 @@ export default async function StaffCertificationsPage({
       <div className="flex justify-between items-center gap-4">
         <DataFilterBar
           batches={batches}
-          sections={['A', 'B', 'C']}
+          sections={['A', 'B']}
           currentBatch={batch}
           currentSection={section}
         />

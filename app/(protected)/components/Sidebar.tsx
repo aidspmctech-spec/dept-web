@@ -2,6 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { LogOut } from 'lucide-react';
 
 interface SidebarProps {
   role: string;
@@ -59,9 +60,15 @@ export default function Sidebar({ role }: SidebarProps) {
           ))}
         </ul>
       </nav>
-      <div className="mt-auto">
+      <div className="mt-auto border-t border-white/20 pt-4">
         <form action="/api/auth/logout" method="POST">
-          <button className="w-full text-left p-2 rounded hover:bg-white/10">Logout</button>
+          <button
+            type="submit"
+            className="flex w-full items-center gap-3 rounded-lg border border-red-300/60 px-4 py-3 text-left text-red-100 transition-colors hover:bg-red-600 hover:text-white focus:outline-none focus:ring-2 focus:ring-red-300"
+          >
+            <LogOut className="h-5 w-5" />
+            <span className="font-medium">Logout</span>
+          </button>
         </form>
       </div>
     </aside>

@@ -1,35 +1,35 @@
 'use client';
 
 import React, { useState } from 'react';
-import { deleteBatch } from './actions';
+import { deleteStudent } from './actions';
 
-interface DeleteBatchButtonProps {
-  batchId: string;
-  batchName: string;
+interface DeleteStudentButtonProps {
+  studentId: string;
+  studentName: string;
 }
 
-export default function DeleteBatchButton({ batchId, batchName }: DeleteBatchButtonProps) {
+export default function DeleteStudentButton({ studentId, studentName }: DeleteStudentButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [typedName, setTypedName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleConfirm = async () => {
-    if (typedName !== batchName) return;
+    if (typedName !== studentName) return;
 
     setIsSubmitting(true);
     setError(null);
 
     const formData = new FormData();
-    formData.append('id', batchId);
+    formData.append('id', studentId);
 
     try {
-      const result = await deleteBatch(formData);
+      const result = await deleteStudent(formData);
       if (result.success) {
         setIsOpen(false);
         setTypedName('');
       } else {
-        setError(result.error || 'Failed to delete batch');
+        setError(result.error || 'Failed to delete student');
       }
     } catch (err: any) {
       setError(err.message || 'An unexpected error occurred');
@@ -51,9 +51,9 @@ export default function DeleteBatchButton({ batchId, batchName }: DeleteBatchBut
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl shadow-xl border border-gray-200 max-w-md w-full p-6 space-y-6">
             <div className="space-y-2">
-              <h3 className="text-xl font-bold text-gray-900">Delete Batch</h3>
+              <h3 className="text-xl font-bold text-gray-900">Delete Student</h3>
               <p className="text-sm text-gray-600">
-                <span className="text-red-600 font-bold">WARNING:</span> This will permanently delete the batch <span className="font-bold text-gray-900">&quot;{batchName}&quot;</span> AND all students assigned to it. All their records—including fees, payments, academics, achievements, certifications, and activities—will be permanently removed. This cannot be undone. Type <span className="font-bold text-gray-900">{batchName}</span> to confirm.
+                <span className="text-red-600 font-bold">WARNING:</span> This will permanently delete the student <span className="font-bold text-gray-900">&quot;{studentName}&quot;</span> and all their associated records—including fees, payments, academic records, achievements, certifications, and activities. This cannot be undone. Type <span className="font-bold text-gray-900">{studentName}</span> to confirm.
               </p>
             </div>
 
@@ -62,7 +62,7 @@ export default function DeleteBatchButton({ batchId, batchName }: DeleteBatchBut
                 type="text"
                 value={typedName}
                 onChange={(e) => setTypedName(e.target.value)}
-                placeholder="Type batch name"
+                placeholder="Type student name"
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg outline-none focus:ring-2 focus:ring-red-500"
               />
               {error && <p className="text-xs text-red-600 font-medium">{error}</p>}
@@ -81,10 +81,10 @@ export default function DeleteBatchButton({ batchId, batchName }: DeleteBatchBut
               </button>
               <button
                 onClick={handleConfirm}
-                disabled={typedName !== batchName || isSubmitting}
+                disabled={typedName !== studentName || isSubmitting}
                 className="px-4 py-2 text-sm font-medium bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
               >
-                {isSubmitting ? 'Deleting...' : 'Delete Batch'}
+                {isSubmitting ? 'Deleting...' : 'Delete Student'}
               </button>
             </div>
           </div>

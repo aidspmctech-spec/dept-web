@@ -3,6 +3,7 @@ import { batchRepository } from '@/lib/repositories/batchRepository';
 import DataFilterBar from '../components/DataFilterBar';
 import FeeFilterBar from '../components/FeeFilterBar';
 import ExportExcelButton from '../components/ExportExcelButton';
+import CreateFeeModal from './CreateFeeModal';
 
 export default async function FeesManagementPage({
   searchParams,
@@ -14,15 +15,39 @@ export default async function FeesManagementPage({
 
   const batches = await batchRepository.getAll();
 
-  // Fetch custom fee types for the filter bar and calculations
-  const { data: feeTypes } = await supabase
-    .from('fee_types')
-    .select('id, name, amount');
+  // Fetch custom fees that have assignments matching current filters
+  let availableCustomFees: { id: string; name: string }[] = [];
+
+  let assignmentQuery = supabase
+    .from('custom_fee_assignments')
+    .select('custom_fee_id, custom_fee_definitions(fee_name), students(batch_id, section)');
+
+  if (batch && batch !== 'all') {
+    assignmentQuery = assignmentQuery.eq('students.batch_id', batch);
+  }
+  if (section && section !== 'all') {
+    assignmentQuery = assignmentQuery.eq('students.section', section);
+  }
+
+  const { data: assignmentsData, error: assignmentsError } = await assignmentQuery;
+
+  if (!assignmentsError && assignmentsData) {
+    const uniqueFees = new Map();
+    assignmentsData.forEach(item => {
+      const def = item.custom_fee_definitions as any;
+      if (def && def.fee_name) {
+        uniqueFees.set(item.custom_fee_id, def.fee_name);
+      }
+    });
+    availableCustomFees = Array.from(uniqueFees.entries()).map(([id, name]) => ({ id, name }));
+  }
+
+  // 1. Fetch filtered students with their fee structures and payments
 
   // 1. Fetch filtered students with their fee structures and payments
   let query = supabase
     .from('students')
-    .select('*, fee_structures(*), payments(*)')
+    .select('*, batches(name), fee_structures(*), payments(*)')
     .order('name');
 
   if (batch) {
@@ -42,63 +67,101 @@ export default async function FeesManagementPage({
     );
   }
 
+  // For custom fees, fetch assignments for the selected custom fee ID
+  let customAssignments: any[] = [];
+  if (component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL') {
+    const { data: assignments } = await supabase
+      .from('custom_fee_assignments')
+      .select('*')
+      .eq('custom_fee_id', component);
+    customAssignments = assignments || [];
+  }
+
   // 2. Compute Paid/Pending status in the Server Component
   const processedData = students.map(student => {
     const structure = student.fee_structures?.find((s: any) => s.academic_year === '2024-2025') || {}; // Default year for now
     const studentPayments = student.payments || [];
 
     let total = 0;
-    if (component === 'TUITION') total = structure.tuition_fee || 0;
-    else if (component === 'TRANSPORT') total = structure.transport_fee || 0;
-    else if (component === 'HOSTEL') total = structure.hostel_fee || 0;
-    else {
-      // It's a custom fee ID
-      const customFee = feeTypes?.find(ft => ft.id === component);
-      total = customFee?.amount || 0;
+    let paid = 0;
+
+    if (component === 'TUITION') {
+      total = structure.tuition_fee || 0;
+      paid = studentPayments
+        .filter((p: any) => p.fee_component === 'TUITION')
+        .reduce((sum: number, p: any) => sum + p.amount, 0);
+    } else if (component === 'TRANSPORT') {
+      total = structure.transport_fee || 0;
+      paid = studentPayments
+        .filter((p: any) => p.fee_component === 'TRANSPORT')
+        .reduce((sum: number, p: any) => sum + p.amount, 0);
+    } else if (component === 'HOSTEL') {
+      total = structure.hostel_fee || 0;
+      paid = studentPayments
+        .filter((p: any) => p.fee_component === 'HOSTEL')
+        .reduce((sum: number, p: any) => sum + p.amount, 0);
+    } else {
+      // It's a custom fee ID - use custom_fee_assignments table
+      const assignment = customAssignments.find(a => a.student_id === student.id);
+      total = assignment?.assigned_amount || 0;
+      paid = assignment?.paid_amount || 0;
     }
 
-    const paid = studentPayments
-      .filter((p: any) => p.fee_component === component)
-      .reduce((sum: number, p: any) => sum + p.amount, 0);
-
-    // For custom fees, we must filter by fee_type_id
-    const actualPaid = (component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL')
-      ? studentPayments
-          .filter((p: any) => p.fee_type_id === component)
-          .reduce((sum: number, p: any) => sum + p.amount, 0)
-      : paid;
-
-    const pending = total - actualPaid;
+    const pending = total - paid;
 
     return {
       student,
       total,
-      paid: actualPaid,
+      paid,
       pending,
       status: pending > 0 ? 'PENDING' : (total > 0 ? 'PAID' : 'N/A'),
     };
   });
 
-  // 3. Filter by status
-  const filteredData = status
-    ? processedData.filter(d => d.status === status.toUpperCase())
-    : processedData;
+  // 3. Filter by total > 0 AND status
+  const filteredData = processedData.filter(d => {
+    // Requirement: exclude records with a zero total for the selected component
+    if (d.total <= 0) return false;
+
+    // Further filter by status if provided
+    if (status) {
+      return d.status === status.toUpperCase();
+    }
+    return true;
+  });
 
   const componentName = (component === 'TUITION' ? 'Tuition' :
                         component === 'TRANSPORT' ? 'Transport' :
                         component === 'HOSTEL' ? 'Hostel' :
-                        feeTypes?.find(ft => ft.id === component)?.name || 'Custom') + ' Fee';
+                        availableCustomFees.find(ft => ft.id === component)?.name || 'Custom') + ' Fee';
 
-  const exportData = filteredData.map(d => ({
-    'Register No': d.student.register_number,
-    'Name': d.student.name,
-    'Batch': d.student.batches?.name || 'N/A',
-    'Section': d.student.section,
-    'Component': componentName,
-    'Total': d.total,
-    'Paid': d.paid,
-    'Pending': d.pending,
-  }));
+  const exportData = filteredData.map(d => {
+    if (component === 'TUITION' || component === 'TRANSPORT' || component === 'HOSTEL') {
+      return {
+        'Register No': d.student.register_number,
+        'Name': d.student.name,
+        'Batch': d.student.batches?.name || 'N/A',
+        'Section': d.student.section,
+        'Component': componentName,
+        'Total': d.total,
+        'Paid': d.paid,
+        'Pending': d.pending,
+      };
+    } else {
+      return {
+        'Register No': d.student.register_number,
+        'Student Name': d.student.name,
+        'Batch': d.student.batches?.name || 'N/A',
+        'Section': d.student.section,
+        'Gender': d.student.gender,
+        'Fee Name': componentName,
+        'Total Fee': d.total,
+        'Paid': d.paid,
+        'Pending': d.pending,
+        'Payment Status': d.status,
+      };
+    }
+  });
 
   return (
     <div className="space-y-8">
@@ -110,23 +173,28 @@ export default async function FeesManagementPage({
       </div>
 
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-4">
+      <div className="flex justify-between items-center gap-4">
+        <div className="flex gap-4">
           <DataFilterBar
             batches={batches}
             sections={['A', 'B']}
             currentBatch={batch}
             currentSection={section}
           />
-          <ExportExcelButton
-            data={exportData}
-            filename={`fees-${component.toLowerCase()}-${status?.toLowerCase() || 'all'}`}
+          <CreateFeeModal
+            batches={batches}
           />
         </div>
+        <ExportExcelButton
+          data={exportData}
+          filename={`fees-${component.toLowerCase()}-${status?.toLowerCase() || 'all'}`}
+        />
+      </div>
 
         <FeeFilterBar
           currentComponent={component}
           currentStatus={status || ''}
-          customFees={feeTypes || []}
+          customFees={availableCustomFees}
         />
       </div>
 
@@ -138,9 +206,16 @@ export default async function FeesManagementPage({
               <th className="px-6 py-4 font-semibold">Name</th>
               <th className="px-6 py-4 font-semibold">Batch</th>
               <th className="px-6 py-4 font-semibold">Section</th>
+              {component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL' && (
+                <th className="px-6 py-4 font-semibold">Gender</th>
+              )}
+              {component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL' && (
+                <th className="px-6 py-4 font-semibold">Fee Name</th>
+              )}
               <th className="px-6 py-4 font-semibold">Total</th>
               <th className="px-6 py-4 font-semibold">Paid</th>
               <th className="px-6 py-4 font-semibold">Pending</th>
+              <th className="px-6 py-4 font-semibold">Status</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -151,16 +226,31 @@ export default async function FeesManagementPage({
                   <td className="px-6 py-4 font-medium">{d.student.name}</td>
                   <td className="px-6 py-4">{d.student.batches?.name || 'N/A'}</td>
                   <td className="px-6 py-4">{d.student.section}</td>
+                  {component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL' && (
+                    <td className="px-6 py-4">{d.student.gender}</td>
+                  )}
+                  {component !== 'TUITION' && component !== 'TRANSPORT' && component !== 'HOSTEL' && (
+                    <td className="px-6 py-4">
+                      {availableCustomFees.find(ft => ft.id === component)?.name || 'Custom Fee'}
+                    </td>
+                  )}
                   <td className="px-6 py-4">₹{d.total}</td>
                   <td className="px-6 py-4">₹{d.paid}</td>
                   <td className={`px-6 py-4 font-bold ${d.pending > 0 ? 'text-red-600 bg-red-50' : 'text-green-600'}`}>
                     ₹{d.pending}
                   </td>
+                  <td className="px-6 py-4">
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      d.status === 'PAID' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                    }`}>
+                      {d.status}
+                    </span>
+                  </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-gray-400 italic">No matching records found.</td>
+                <td colSpan={10} className="px-6 py-12 text-center text-gray-400 italic">No matching records found.</td>
               </tr>
             )}
           </tbody>
