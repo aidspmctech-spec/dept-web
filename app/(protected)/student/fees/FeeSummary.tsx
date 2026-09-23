@@ -1,7 +1,6 @@
 'use client';
 
 import React from 'react';
-import { makeImmediatePayment } from '../actions';
 
 interface FeeStructure {
   tuition_fee: number;
@@ -101,18 +100,6 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
   const totalPaid = allRows.reduce((sum, r) => sum + r.paid, 0);
   const totalBalance = allRows.reduce((sum, r) => sum + r.balance, 0);
 
-  const handlePayment = async (componentKey: string) => {
-    try {
-      const result = await makeImmediatePayment({ component: componentKey });
-      if (result.success) {
-        alert('Payment successful!');
-        window.location.reload();
-      }
-    } catch (err: any) {
-      alert(err.message || 'Payment failed');
-    }
-  };
-
   return (
     <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-6">
       <h3 className="text-xl font-bold text-[#1a365d]">Fee Summary</h3>
@@ -125,7 +112,6 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
               <th className="py-3 px-2 text-right">Required</th>
               <th className="py-3 px-2 text-right">Paid</th>
               <th className="py-3 px-2 text-right">Balance</th>
-              <th className="py-3 px-2 text-center">Action</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-gray-100">
@@ -135,16 +121,6 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
                 <td className="py-4 px-2 text-right">₹{row.required.toLocaleString()}</td>
                 <td className="py-4 px-2 text-right text-green-600">₹{row.paid.toLocaleString()}</td>
                 <td className="py-4 px-2 text-right font-bold text-red-600">₹{row.balance.toLocaleString()}</td>
-                <td className="py-4 px-2 text-center">
-                  {row.balance > 0 && (
-                    <button
-                      onClick={() => handlePayment(row.componentKey)}
-                      className="px-3 py-1 bg-blue-600 text-white rounded-md text-xs font-semibold hover:bg-blue-700 transition-colors"
-                    >
-                      Make Payment
-                    </button>
-                  )}
-                </td>
               </tr>
             ))}
             <tr className="bg-gray-50 font-bold text-[#1a365d]">
@@ -152,7 +128,6 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
               <td className="py-4 px-2 text-right">₹{totalRequired.toLocaleString()}</td>
               <td className="py-4 px-2 text-right">₹{totalPaid.toLocaleString()}</td>
               <td className="py-4 px-2 text-right text-red-600">₹{totalBalance.toLocaleString()}</td>
-              <td className="py-4 px-2"></td>
             </tr>
           </tbody>
         </table>

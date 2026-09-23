@@ -35,11 +35,8 @@ export default function Sidebar({ role }: SidebarProps) {
     { label: 'Batch Management', path: '/admin/batches' },
   ];
 
-  const adminLinks = [
-    { label: 'Audit Logs', path: '/admin/logs' },
-  ];
+  const links = role === 'STUDENT' ? studentLinks : (role === 'STAFF' ? staffLinks : []);
 
-  const links = role === 'STUDENT' ? studentLinks : (role === 'STAFF' ? [...staffLinks, ...adminLinks] : []);
 
   return (
     <aside className="w-64 bg-[#1a365d] text-white p-8 flex flex-col flex-shrink-0">

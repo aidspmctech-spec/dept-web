@@ -18,9 +18,10 @@ interface FeeFormProps {
   onTotalChange?: (totals: { tuition_fee: number; hostel_fee: number; transport_fee: number }) => void;
   onPaymentSuccess?: () => void;
   customFeeDefinitions: any[];
+  selectedComponent?: string;
 }
 
-export default function FeeForm({ initialData, onTotalChange, onPaymentSuccess }: FeeFormProps) {
+export default function FeeForm({ initialData, onTotalChange, onPaymentSuccess, id, selectedComponent }: FeeFormProps & { id?: string }) {
   const isHosteller = initialData?.student_type === 'Hosteller' || initialData?.student_type === 'HOSTELLER';
   const isBusUser = initialData?.transport_type === 'COLLEGE_BUS';
 
@@ -48,6 +49,13 @@ export default function FeeForm({ initialData, onTotalChange, onPaymentSuccess }
     component: 'TUITION',
     date: '',
   });
+
+  // Sync selected component from props to internal state
+  React.useEffect(() => {
+    if (selectedComponent) {
+      setPayment(prev => ({ ...prev, component: selectedComponent }));
+    }
+  }, [selectedComponent]);
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);

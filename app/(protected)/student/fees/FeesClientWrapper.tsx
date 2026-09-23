@@ -23,6 +23,7 @@ export default function FeesClientWrapper({
   const [feeStructure, setFeeStructure] = useState(initialFeeStructure);
   const [payments, setPayments] = useState(initialPayments);
   const [customFees, setCustomFees] = useState(initialCustomFees);
+  const [selectedComponent, setSelectedComponent] = useState<'TUITION' | 'HOSTEL' | 'TRANSPORT' | string>('TUITION');
 
   // We use a simple state to track "draft" changes in the form for live updates
   const [draftTotals, setDraftTotals] = useState({
@@ -39,6 +40,12 @@ export default function FeesClientWrapper({
     transport_fee: draftTotals.transport_fee,
   };
 
+  const handleSelectComponent = (componentKey: string) => {
+    setSelectedComponent(componentKey);
+    // Optionally scroll to the form if it's off-screen
+    document.getElementById('payment-form')?.scrollIntoView({ behavior: 'smooth' });
+  };
+
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div className="lg:col-span-2 space-y-8">
@@ -48,11 +55,13 @@ export default function FeesClientWrapper({
           hostelType={initialHostelType}
           transportType={initialTransportType}
           customFees={customFees}
+          onSelectComponent={handleSelectComponent}
         />
         <PaymentHistory payments={payments} />
       </div >
       <div className="lg:col-span-1">
         <FeeForm
+          id="payment-form"
           initialData={{
             student_type: initialHostelType ?? null,
             transport_type: initialTransportType ?? null,
@@ -64,6 +73,7 @@ export default function FeesClientWrapper({
             bus_paid: 0,
             customFees: customFees,
           }}
+          selectedComponent={selectedComponent}
           customFeeDefinitions={customFees.map(cf => cf.custom_fee_definitions)}
           onTotalChange={(newTotals) => setDraftTotals(newTotals)}
           onPaymentSuccess={() => {
@@ -72,6 +82,6 @@ export default function FeesClientWrapper({
           }}
         />
       </div >
-    </div>
+    </div >
   );
 }
