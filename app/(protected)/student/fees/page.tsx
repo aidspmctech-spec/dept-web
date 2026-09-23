@@ -19,12 +19,16 @@ export default async function FeesPage() {
     .maybeSingle();
 
   // 2. Fetch all payments for this student for the year
-  const { data: payments } = await supabase
+  const { data: payments, error: paymentsError } = await supabase
     .from('payments')
-    .select('*, custom_fee_definitions(fee_name)')
+    .select('*, custom_fee_assignments(custom_fee_definitions(fee_name))')
     .eq('student_id', profile.student_id)
     .eq('academic_year', currentYear)
     .order('payment_date', { ascending: false });
+
+  if (paymentsError) {
+    console.error('[DEBUG] Error fetching payments:', paymentsError);
+  }
 
   // 3. Fetch student type/transport for applicability logic
   const { data: hostel } = await supabase

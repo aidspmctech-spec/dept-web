@@ -56,7 +56,7 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
   const components = [
     { key: 'TUITION', label: 'Tuition', field: 'tuition_fee' },
     { key: 'HOSTEL', label: 'Hostel', field: 'hostel_fee', applicable: hostelType === 'Hosteller' },
-    { key: 'TRANSPORT', label: 'Transport', field: 'transport_fee', applicable: transportType === 'COLLEGE_BUS' },
+    { key: 'TRANSPORT', label: 'Bus Fee', field: 'transport_fee', applicable: transportType === 'COLLEGE_BUS' },
   ];
 
   const calculatePaid = (component: string) => {

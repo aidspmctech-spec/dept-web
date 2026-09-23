@@ -132,7 +132,7 @@ export default async function FeesManagementPage({
   });
 
   const componentName = (component === 'TUITION' ? 'Tuition' :
-                        component === 'TRANSPORT' ? 'Transport' :
+                        component === 'TRANSPORT' ? 'Bus Fee' :
                         component === 'HOSTEL' ? 'Hostel' :
                         availableCustomFees.find(ft => ft.id === component)?.name || 'Custom') + ' Fee';
 

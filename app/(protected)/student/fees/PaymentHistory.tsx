@@ -10,9 +10,11 @@ interface Payment {
   payment_mode: string;
   payment_status: string;
   transaction_reference: string | null;
-  custom_fee_definitions?: {
-    fee_name: string;
-  } | { fee_name: string }[];
+  custom_fee_assignments?: {
+    custom_fee_definitions?: {
+      fee_name: string;
+    };
+  } | any[];
 }
 
 interface PaymentHistoryProps {
@@ -69,11 +71,12 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
                 <td className="py-3 px-2 font-medium text-gray-700">
                   {(() => {
                     if (payment.fee_component === 'CUSTOM') {
-                      const def = Array.isArray(payment.custom_fee_definitions)
-                        ? payment.custom_fee_definitions[0]
-                        : payment.custom_fee_definitions;
+                      const def = Array.isArray(payment.custom_fee_assignments)
+                        ? payment.custom_fee_assignments[0]?.custom_fee_definitions
+                        : payment.custom_fee_assignments?.custom_fee_definitions;
                       return def?.fee_name || 'Custom Fee';
                     }
+                    if (payment.fee_component === 'TRANSPORT') return 'Bus Fee';
                     return payment.fee_component.charAt(0) + payment.fee_component.slice(1).toLowerCase();
                   })()}
                 </td>

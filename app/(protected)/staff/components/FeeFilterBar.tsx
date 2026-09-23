@@ -45,7 +45,7 @@ export default function FeeFilterBar({
             className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
           >
             <option value="TUITION">Tuition Fee</option>
-            <option value="TRANSPORT">Transport Fee</option>
+            <option value="TRANSPORT">Bus Fee</option>
             <option value="HOSTEL">Hostel Fee</option>
           </select>
         </div>

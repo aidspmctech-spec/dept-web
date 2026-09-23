@@ -108,7 +108,7 @@ export default async function StudentDetailPage({
           </div>
 
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-            <h3 className="font-bold text-[#1a365d] mb-4 border-b pb-2">Accommodation & Transport</h3>
+            <h3 className="font-bold text-[#1a365d] mb-4 border-b pb-2">Accommodation & Bus</h3>
             <div className="space-y-4 text-sm">
               <div className="p-3 bg-gray-50 rounded-lg">
                 <p className="font-bold text-gray-700 mb-1">Hostel</p>
@@ -119,7 +119,7 @@ export default async function StudentDetailPage({
                 )}
               </div>
               <div className="p-3 bg-gray-50 rounded-lg">
-                <p className="font-bold text-gray-700 mb-1">Transport</p>
+                <p className="font-bold text-gray-700 mb-1">Bus</p>
                 {transport ? (
                   <p className="text-gray-600">{transport.transport_type === 'COLLEGE_BUS' ? `Bus Route ${transport.route}` : 'No bus facility'}</p>
                 ) : (
@@ -182,7 +182,7 @@ export default async function StudentDetailPage({
                       <p className="text-lg font-bold text-blue-900">₹{feeStructure.tuition_fee}</p>
                     </div>
                     <div className="p-3 bg-blue-50 rounded-lg text-center">
-                      <p className="text-xs text-blue-600 font-medium uppercase">Transport</p>
+                      <p className="text-xs text-blue-600 font-medium uppercase">Bus Fee</p>
                       <p className="text-lg font-bold text-blue-900">₹{feeStructure.transport_fee}</p>
                     </div>
                     <div className="p-3 bg-blue-50 rounded-lg text-center">
