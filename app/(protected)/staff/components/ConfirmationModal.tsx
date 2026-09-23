@@ -33,7 +33,9 @@ export default function ConfirmationModal({
 }: ConfirmationModalProps) {
   if (!isOpen) return null;
 
-  const isConfirmed = requiredValue ? confirmationValue === requiredValue : true;
+  const isConfirmed = requiredValue
+    ? (confirmationValue ?? '').trim().toLowerCase() === requiredValue.trim().toLowerCase()
+    : true;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
