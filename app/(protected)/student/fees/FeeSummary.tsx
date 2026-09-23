@@ -29,9 +29,10 @@ interface FeeSummaryProps {
   hostelType?: string;
   transportType?: string;
   customFees?: CustomFeeAssignment[];
+  onSelectComponent?: (componentKey: string) => void;
 }
 
-export default function FeeSummary({ feeStructure, payments, hostelType, transportType, customFees = [] }: FeeSummaryProps) {
+export default function FeeSummary({ feeStructure, payments, hostelType, transportType, customFees = [], onSelectComponent }: FeeSummaryProps) {
   if (!feeStructure || (Array.isArray(feeStructure) && feeStructure.length === 0)) {
     return (
       <div className="p-8 bg-orange-50 text-orange-700 rounded-xl border border-orange-200 text-center">
@@ -116,7 +117,7 @@ export default function FeeSummary({ feeStructure, payments, hostelType, transpo
           </thead>
           <tbody className="divide-y divide-gray-100">
             {allRows.map((row, idx) => (
-              <tr key={idx} className="text-sm">
+              <tr key={idx} className="text-sm hover:bg-gray-50 cursor-pointer transition-colors" onClick={() => onSelectComponent?.(row.componentKey)}>
                 <td className="py-4 px-2 font-medium text-gray-700">{row.label}</td>
                 <td className="py-4 px-2 text-right">₹{row.required.toLocaleString()}</td>
                 <td className="py-4 px-2 text-right text-green-600">₹{row.paid.toLocaleString()}</td>

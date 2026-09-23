@@ -1,11 +1,17 @@
 import { getCurrentUser } from '@/lib/auth';
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
+import PasswordInput from '@/components/ui/PasswordInput';
 
 export default async function LoginPage(props: {
   searchParams: Promise<{ message?: string }>;
 }) {
   const searchParams = await props.searchParams;
+
+  // We need to convert this to a Client Component if we want to use the stateful PasswordInput,
+  // OR we can just keep the form as is and wrap the specific input.
+  // Since PasswordInput is 'use client', it can be used inside this server component as long as the
+  // surrounding form is handled by the server (which it is via /api/auth/login).
 
   // Use only authentication check to redirect already logged-in users.
   // Do NOT call getUserRole() or getCurrentProfile() here.
@@ -40,9 +46,8 @@ export default async function LoginPage(props: {
           </div>
           <div className="form-group mb-6">
             <label className="form-label">Password</label>
-            <input
+            <PasswordInput
               name="password"
-              type="password"
               className="form-input"
               placeholder="Enter your password"
               required

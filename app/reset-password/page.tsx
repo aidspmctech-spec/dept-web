@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
+import PasswordInput from '@/components/ui/PasswordInput';
 
 export default async function ResetPasswordPage(props: {
   searchParams: Promise<{ message?: string; status?: string }>;
@@ -34,10 +35,9 @@ export default async function ResetPasswordPage(props: {
 
         <form action="/api/auth/update-password" method="POST" className="text-left">
           <div className="form-group mb-4">
-            <label className="form-label">New Password *</label>
-            <input
+            <PasswordInput
+              label="New Password *"
               name="password"
-              type="password"
               className="form-input"
               placeholder="Enter your new password"
               required
@@ -45,10 +45,9 @@ export default async function ResetPasswordPage(props: {
             />
           </div>
           <div className="form-group mb-6">
-            <label className="form-label">Confirm New Password *</label>
-            <input
+            <PasswordInput
+              label="Confirm New Password *"
               name="confirmPassword"
-              type="password"
               className="form-input"
               placeholder="Re-enter your new password"
               required

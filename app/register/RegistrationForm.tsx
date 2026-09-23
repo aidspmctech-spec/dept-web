@@ -1,8 +1,7 @@
-'use client';
-
 import { useState } from 'react';
 import { registerStudent } from './actions';
 import Link from 'next/link';
+import PasswordInput from '@/components/ui/PasswordInput';
 
 export default function RegistrationForm({ batches }: { batches: any[] }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -76,10 +75,9 @@ export default function RegistrationForm({ batches }: { batches: any[] }) {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Password *</label>
-        <input
+        <PasswordInput
+          label="Password *"
           name="password"
-          type="password"
           required
           placeholder="••••••••"
           className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
@@ -87,10 +85,9 @@ export default function RegistrationForm({ batches }: { batches: any[] }) {
       </div>
 
       <div className="space-y-2">
-        <label className="block text-sm font-medium text-gray-700">Confirm Password *</label>
-        <input
+        <PasswordInput
+          label="Confirm Password *"
           name="confirmPassword"
-          type="password"
           required
           placeholder="••••••••"
           className="w-full p-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"

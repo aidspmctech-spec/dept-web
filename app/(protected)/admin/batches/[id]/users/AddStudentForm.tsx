@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { registerStudentInBatch } from '../../actions';
+import PasswordInput from '@/components/ui/PasswordInput';
 
 export default function AddStudentForm({ batchId }: { batchId: string }) {
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
@@ -73,10 +74,9 @@ export default function AddStudentForm({ batchId }: { batchId: string }) {
           />
         </div>
         <div className="space-y-1">
-          <label className="text-sm font-medium text-gray-700">Password *</label>
-          <input
+          <PasswordInput
+            label="Password *"
             name="password"
-            type="password"
             required
             placeholder="••••••••"
             className="w-full p-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 outline-none"
