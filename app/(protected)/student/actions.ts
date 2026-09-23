@@ -70,6 +70,12 @@ export async function submitPayment(formData: FormData) {
   const component = formData.get('component') as string;
   const paymentDate = formData.get('date') as string;
 
+  console.log('[CUSTOM FEE DIAGNOSTICS] submitPayment:', {
+    studentId,
+    component,
+    amount,
+  });
+
   const paymentModeMap: Record<string, string> = {
     'Cash': 'CASH',
     'Online': 'ONLINE',
@@ -163,6 +169,125 @@ export async function submitPayment(formData: FormData) {
   }
 
   revalidatePath('/student/fees');
+}
+
+export async function makeImmediatePayment(paymentData: { component: string }) {
+  const profile = await getCurrentProfile();
+
+  if (!profile || profile.role !== 'STUDENT' || !profile.student_id) {
+    throw new Error('Unauthorized');
+  }
+
+  const studentId = profile.student_id;
+  const supabase = await createClient();
+  const currentYear = '2024-2025';
+  const component = paymentData.component;
+
+  if (component.startsWith('custom:')) {
+    const assignmentId = component.split(':')[1];
+
+    // 1. Verify the assignment exists and belongs to the student
+    const { data: assignment, error: assignError } = await supabase
+      .from('custom_fee_assignments')
+      .select('custom_fee_id, assigned_amount, paid_amount')
+      .eq('id', assignmentId)
+      .eq('student_id', studentId)
+      .single();
+
+    if (assignError || !assignment) {
+      throw new Error('Invalid custom fee assignment.');
+    }
+
+    const pendingAmount = assignment.assigned_amount - assignment.paid_amount;
+    if (pendingAmount <= 0) {
+      throw new Error('This fee is already fully paid.');
+    }
+
+    // 2. Record the payment for the full pending amount
+    const { error: paymentError } = await supabase
+      .from('payments')
+      .insert({
+        student_id: studentId,
+        academic_year: currentYear,
+        fee_component: 'CUSTOM',
+        fee_type_id: assignment.custom_fee_id,
+        amount: pendingAmount,
+        payment_mode: 'ONLINE',
+        payment_status: 'VERIFIED',
+        payment_date: new Date().toISOString(),
+      });
+
+    if (paymentError) throw paymentError;
+
+    // 3. Update the assignment record
+    const { error: updateError } = await supabase
+      .from('custom_fee_assignments')
+      .update({
+        paid_amount: assignment.assigned_amount,
+        payment_status: 'PAID',
+        paid_at: new Date().toISOString(),
+      })
+      .eq('id', assignmentId);
+
+    if (updateError) throw updateError;
+
+  } else {
+    // Standard payment for TUITION, TRANSPORT, HOSTEL
+    // 1. Get the total from fee_structures
+    const { data: structure, error: structError } = await supabase
+      .from('fee_structures')
+      .select('tuition_fee, hostel_fee, transport_fee')
+      .eq('student_id', studentId)
+      .eq('academic_year', currentYear)
+      .maybeSingle();
+
+    if (structError) throw structError;
+    if (!structure) throw new Error('Fee structure not found. Please update your totals first.');
+
+    const totalMap: Record<string, number> = {
+      TUITION: structure.tuition_fee,
+      HOSTEL: structure.hostel_fee,
+      TRANSPORT: structure.transport_fee,
+    };
+
+    const total = totalMap[component] || 0;
+    if (total <= 0) throw new Error('No fee amount specified for this component.');
+
+    // 2. Calculate current paid amount
+    const { data: payments, error: payError } = await supabase
+      .from('payments')
+      .select('amount')
+      .eq('student_id', studentId)
+      .eq('academic_year', currentYear)
+      .eq('fee_component', component);
+
+    if (payError) throw payError;
+
+    const paid = payments?.reduce((sum, p) => sum + p.amount, 0) || 0;
+    const balance = total - paid;
+
+    if (balance <= 0) {
+      throw new Error('This fee is already fully paid.');
+    }
+
+    // 3. Record payment for the balance
+    const { error: insertError } = await supabase
+      .from('payments')
+      .insert({
+        student_id: studentId,
+        academic_year: currentYear,
+        fee_component: component,
+        amount: balance,
+        payment_mode: 'ONLINE',
+        payment_status: 'VERIFIED',
+        payment_date: new Date().toISOString(),
+      });
+
+    if (insertError) throw insertError;
+  }
+
+  revalidatePath('/student/fees');
+  return { success: true };
 }
 
 /**

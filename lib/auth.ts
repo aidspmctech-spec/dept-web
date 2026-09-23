@@ -86,7 +86,8 @@ export async function requireRole(allowedRoles: string[]) {
   }
 
   // 3. Check Authorization (Role)
-  if (!allowedRoles.includes(profile.role)) {
+  const userRole = profile.role?.toUpperCase();
+  if (!allowedRoles.map(r => r.toUpperCase()).includes(userRole)) {
     // User is authenticated but lacks the required role.
     redirect('/dashboard');
   }

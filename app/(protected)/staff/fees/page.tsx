@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { batchRepository } from '@/lib/repositories/batchRepository';
+import Link from 'next/link';
 import DataFilterBar from '../components/DataFilterBar';
 import FeeFilterBar from '../components/FeeFilterBar';
 import ExportExcelButton from '../components/ExportExcelButton';
@@ -181,9 +182,12 @@ export default async function FeesManagementPage({
             currentBatch={batch}
             currentSection={section}
           />
-          <CreateFeeModal
-            batches={batches}
-          />
+          <Link
+            href="/staff/custom-fees"
+            className="px-4 py-2 bg-[#1a365d] text-white rounded-lg font-medium hover:bg-blue-800 transition-colors"
+          >
+            Custom Fees
+          </Link>
         </div>
         <ExportExcelButton
           data={exportData}
@@ -195,6 +199,7 @@ export default async function FeesManagementPage({
           currentComponent={component}
           currentStatus={status || ''}
           customFees={availableCustomFees}
+          mode="regular"
         />
       </div>
 

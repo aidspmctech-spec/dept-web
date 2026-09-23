@@ -246,11 +246,16 @@ export default function FeeForm({ initialData, onTotalChange, onPaymentSuccess }
               {initialData?.customFees && initialData.customFees.length > 0 && (
                 <>
                   <optgroup label="Custom Fees">
-                    {initialData.customFees.map(cf => (
-                      <option key={cf.id} value={`custom:${cf.id}`}>
-                        {cf.custom_fee_definitions?.fee_name || 'Custom Fee'}
-                      </option>
-                    ))}
+                    {initialData.customFees.map(cf => {
+                      const def = Array.isArray(cf.custom_fee_definitions)
+                        ? cf.custom_fee_definitions[0]
+                        : cf.custom_fee_definitions;
+                      return (
+                        <option key={cf.id} value={`custom:${cf.id}`}>
+                          {def?.fee_name || 'Custom Fee'}
+                        </option>
+                      );
+                    })}
                   </optgroup>
                 </>
               )}

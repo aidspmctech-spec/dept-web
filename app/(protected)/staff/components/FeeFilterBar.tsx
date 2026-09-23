@@ -8,15 +8,19 @@ interface CustomFee {
   name: string;
 }
 
+interface FeeFilterBarProps {
+  currentComponent: string;
+  currentStatus: string;
+  customFees: CustomFee[];
+  mode: 'regular' | 'custom';
+}
+
 export default function FeeFilterBar({
   currentComponent,
   currentStatus,
   customFees,
-}: {
-  currentComponent: string;
-  currentStatus: string;
-  customFees: CustomFee[];
-}) {
+  mode,
+}: FeeFilterBarProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -32,23 +36,34 @@ export default function FeeFilterBar({
 
   return (
     <div className="flex flex-wrap items-center gap-4 p-4 bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="flex items-center gap-2">
-        <label className="text-sm font-medium text-gray-600">Component:</label>
-        <select
-          value={currentComponent}
-          onChange={(e) => updateFilter('component', e.target.value)}
-          className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          <option value="TUITION">Tuition Fee</option>
-          <option value="TRANSPORT">Transport Fee</option>
-          <option value="HOSTEL">Hostel Fee</option>
-          <optgroup label="Custom Fees">
+      {mode === 'regular' ? (
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-600">Component:</label>
+          <select
+            value={currentComponent}
+            onChange={(e) => updateFilter('component', e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="TUITION">Tuition Fee</option>
+            <option value="TRANSPORT">Transport Fee</option>
+            <option value="HOSTEL">Hostel Fee</option>
+          </select>
+        </div>
+      ) : (
+        <div className="flex items-center gap-2">
+          <label className="text-sm font-medium text-gray-600">Custom Fee:</label>
+          <select
+            value={currentComponent}
+            onChange={(e) => updateFilter('component', e.target.value)}
+            className="px-3 py-1.5 border border-gray-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          >
+            <option value="all">All Custom Fees</option>
             {customFees.map(cf => (
               <option key={cf.id} value={cf.id}>{cf.name}</option>
             ))}
-          </optgroup>
-        </select>
-      </div>
+          </select>
+        </div>
+      )}
 
       <div className="flex items-center gap-2">
         <label className="text-sm font-medium text-gray-600">Status:</label>

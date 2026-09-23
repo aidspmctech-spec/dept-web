@@ -48,7 +48,15 @@ export async function createCustomFee(formData: FormData) {
   if (!profile) throw new Error('Unauthorized');
 
   const rawName = formData.get('name') as string;
-  const name = normalizeFeeName(rawName);
+  if (!rawName) throw new Error('Fee name is required');
+
+  // Normalize to Title Case: "book fees" -> "Book Fees"
+  const name = rawName
+    .toLowerCase()
+    .split(' ')
+    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(' ');
+
   const amount = parseFloat(formData.get('amount') as string);
   const batchId = formData.get('batchId') as string;
   const section = formData.get('section') as string;
@@ -56,8 +64,8 @@ export async function createCustomFee(formData: FormData) {
   const description = formData.get('description') as string;
   const dueDate = formData.get('dueDate') as string;
 
-  if (!name || isNaN(amount) || amount < 0) {
-    throw new Error('Invalid fee name or amount');
+  if (isNaN(amount) || amount < 0) {
+    throw new Error('Invalid amount');
   }
 
   const adminSupabase = createAdminClient();
@@ -127,6 +135,37 @@ export async function createCustomFee(formData: FormData) {
     return { success: true, assignedCount: matchingStudents?.length || 0 };
   } catch (error: any) {
     console.error('[CREATE CUSTOM FEE] Error:', error.message);
+    return { success: false, error: error.message };
+  }
+}
+
+export async function deleteCustomFee(feeId: string) {
+  const profile = await requireRole(['STAFF']);
+  if (!profile) throw new Error('Unauthorized');
+
+  const adminSupabase = createAdminClient();
+
+  try {
+    // 1. Delete all assignments associated with this fee
+    const { error: assignError } = await adminSupabase
+      .from('custom_fee_assignments')
+      .delete()
+      .eq('custom_fee_id', feeId);
+
+    if (assignError) throw assignError;
+
+    // 2. Delete the fee definition
+    const { error: defError } = await adminSupabase
+      .from('custom_fee_definitions')
+      .delete()
+      .eq('id', feeId);
+
+    if (defError) throw defError;
+
+    revalidatePath('/staff/custom-fees');
+    return { success: true };
+  } catch (error: any) {
+    console.error('[DELETE CUSTOM FEE] Error:', error.message);
     return { success: false, error: error.message };
   }
 }

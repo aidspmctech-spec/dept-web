@@ -5,11 +5,14 @@ import React from 'react';
 interface Payment {
   payment_date: string;
   academic_year: string;
-  fee_component: 'TUITION' | 'TRANSPORT' | 'HOSTEL';
+  fee_component: string;
   amount: number;
-  payment_mode: 'Cash' | 'Online' | 'DD' | 'CASH' | 'ONLINE';
+  payment_mode: string;
   payment_status: string;
   transaction_reference: string | null;
+  custom_fee_definitions?: {
+    fee_name: string;
+  } | { fee_name: string }[];
 }
 
 interface PaymentHistoryProps {
@@ -64,7 +67,15 @@ export default function PaymentHistory({ payments }: PaymentHistoryProps) {
                   })()}
                 </td>
                 <td className="py-3 px-2 font-medium text-gray-700">
-                  {payment.fee_component.charAt(0) + payment.fee_component.slice(1).toLowerCase()}
+                  {(() => {
+                    if (payment.fee_component === 'CUSTOM') {
+                      const def = Array.isArray(payment.custom_fee_definitions)
+                        ? payment.custom_fee_definitions[0]
+                        : payment.custom_fee_definitions;
+                      return def?.fee_name || 'Custom Fee';
+                    }
+                    return payment.fee_component.charAt(0) + payment.fee_component.slice(1).toLowerCase();
+                  })()}
                 </td>
                 <td className="py-3 px-2 text-right font-bold text-gray-900">
                   ₹{payment.amount.toLocaleString()}

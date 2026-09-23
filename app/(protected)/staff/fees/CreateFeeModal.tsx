@@ -6,9 +6,10 @@ import { createCustomFee, getMatchingStudentsCount } from './actions';
 
 interface CreateFeeModalProps {
   batches: { id: string; name: string }[];
+  disabled?: boolean;
 }
 
-export default function CreateFeeModal({ batches }: CreateFeeModalProps) {
+export default function CreateFeeModal({ batches, disabled }: CreateFeeModalProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -90,8 +91,10 @@ export default function CreateFeeModal({ batches }: CreateFeeModalProps) {
   return (
     <>
       <button
+        type="button"
         onClick={() => setIsOpen(true)}
-        className="px-4 py-2 bg-[#1a365d] text-white rounded-lg font-medium hover:bg-blue-800 transition-colors"
+        disabled={disabled}
+        className="px-4 py-2 bg-[#1a365d] text-white rounded-lg font-medium hover:bg-blue-800 transition-colors disabled:bg-gray-300 disabled:cursor-not-allowed"
       >
         Create Fee
       </button>
@@ -101,7 +104,7 @@ export default function CreateFeeModal({ batches }: CreateFeeModalProps) {
           <div className="bg-white rounded-xl shadow-xl border border-gray-200 max-w-2xl w-full max-h-[90vh] overflow-y-auto p-6 space-y-6">
             <div className="flex justify-between items-center">
               <h3 className="text-xl font-bold text-gray-900">Create Custom Fee</h3>
-              <button onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
+              <button type="button" onClick={() => setIsOpen(false)} className="text-gray-400 hover:text-gray-600">✕</button>
             </div>
 
             {!showConfirmation ? (
@@ -200,12 +203,14 @@ export default function CreateFeeModal({ batches }: CreateFeeModalProps) {
 
                 <div className="md:col-span-2 flex justify-end gap-3">
                   <button
+                    type="button"
                     onClick={() => setIsOpen(false)}
                     className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     Cancel
                   </button>
                   <button
+                    type="button"
                     onClick={checkMatchingStudents}
                     disabled={!formData.name || !formData.amount || isSubmitting}
                     className="px-6 py-2 bg-[#1a365d] text-white rounded-lg font-medium hover:bg-blue-800 transition-colors disabled:bg-gray-300"
@@ -225,12 +230,14 @@ export default function CreateFeeModal({ batches }: CreateFeeModalProps) {
 
                 <div className="flex justify-center gap-3">
                   <button
+                    type="button"
                     onClick={() => setShowConfirmation(false)}
                     className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
                   >
                     Go Back
                   </button>
                   <button
+                    type="button"
                     onClick={handleSubmit}
                     disabled={isSubmitting}
                     className="px-6 py-2 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors disabled:bg-gray-300"

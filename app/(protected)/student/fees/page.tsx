@@ -21,7 +21,7 @@ export default async function FeesPage() {
   // 2. Fetch all payments for this student for the year
   const { data: payments } = await supabase
     .from('payments')
-    .select('*')
+    .select('*, custom_fee_definitions(fee_name)')
     .eq('student_id', profile.student_id)
     .eq('academic_year', currentYear)
     .order('payment_date', { ascending: false });
@@ -40,10 +40,34 @@ export default async function FeesPage() {
     .maybeSingle();
 
   // 4. Fetch Custom Fee Assignments
-  const { data: customFees } = await supabase
+  const { data: studentData } = await supabase
+    .from('students')
+    .select('batch_id, section, gender')
+    .eq('id', profile.student_id)
+    .maybeSingle();
+
+  const { data: customFees, error: customFeesError } = await supabase
     .from('custom_fee_assignments')
     .select('*, custom_fee_definitions(fee_name, amount, description)')
     .eq('student_id', profile.student_id);
+
+  // TEMPORARY SERVER LOGS
+  console.log('[CUSTOM FEE DIAGNOSTICS] Student View:', {
+    studentId: profile.student_id,
+    batchId: studentData?.batch_id,
+    section: studentData?.section,
+    assignmentCount: customFees?.length || 0,
+    feeNames: customFees?.map(cf => cf.custom_fee_definitions?.fee_name),
+  });
+
+  if (customFeesError) {
+    console.error('[DEBUG] Error fetching custom fees:', customFeesError);
+  }
+
+  console.log('[DEBUG] Custom fees fetched:', {
+    count: customFees?.length,
+    fees: customFees,
+  });
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
