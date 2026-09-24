@@ -1,4 +1,4 @@
-# IIDS Database Schema
+# AIDS Database Schema
 
 ## 1. Students
 - RegisterNo (PK, String)

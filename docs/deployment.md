@@ -1,6 +1,6 @@
-# Deployment Guide: IIDS Student Portal
+# Deployment Guide: AIDS Student Portal
 
-This guide provides step-by-step instructions to deploy the IIDS Student Management & Development Portal using the zero-cost architecture.
+This guide provides step-by-step instructions to deploy the AIDS Student Management & Development Portal using the zero-cost architecture.
 
 ## 🛠️ Prerequisites
 - A Google Account (for Google Sheets and Apps Script).
@@ -10,7 +10,7 @@ This guide provides step-by-step instructions to deploy the IIDS Student Managem
 
 ## Step 1: Database Setup (Google Sheets)
 1. Create a new **Google Spreadsheet**.
-2. Name it `IIDS_Student_Portal_DB`.
+2. Name it `AIDS_Student_Portal_DB`.
 3. Copy the **Spreadsheet ID** from the URL:
    `https://docs.google.com/spreadsheets/d/[THIS_IS_THE_ID]/edit`
 4. Keep this ID ready for the backend configuration.
@@ -45,7 +45,7 @@ This guide provides step-by-step instructions to deploy the IIDS Student Managem
 6. **Deploy as Web App**:
    - Click **Deploy** $\rightarrow$ **New Deployment**.
    - Select type: **Web App**.
-   - Description: `IIDS Portal API v1.0`.
+   - Description: `AIDS Portal API v1.0`.
    - Execute as: **Me** (This is critical; it allows the API to access the private sheet).
    - Who has access: **Anyone**.
    - Click **Deploy**.
@@ -66,7 +66,7 @@ This guide provides step-by-step instructions to deploy the IIDS Student Managem
 
 ## 🚦 Final Verification Checklist
 - [ ] Can I reach the login page?
-- [ ] Can I log in as a student (`23AD101` / `IIDS-DEMO-123`)?
+- [ ] Can I log in as a student (`23AD101` / `AIDS-DEMO-123`)?
 - [ ] Can I view my profile and fees?
 - [ ] Can I log in as staff (`STF-001` / `STAFF-DEMO-456`)?
 - [ ] Can I verify a pending achievement?

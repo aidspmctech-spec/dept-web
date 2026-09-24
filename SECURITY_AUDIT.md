@@ -1,4 +1,4 @@
-# Security Audit: IIDS Student Portal
+# Security Audit: AIDS Student Portal
 
 ## 1. Authentication
 - **Mechanism**: Migrated to Supabase Auth (JWT-based).

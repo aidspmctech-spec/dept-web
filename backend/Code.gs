@@ -4,7 +4,7 @@
  */
 
 function doGet(e) {
-  return HtmlService.createHtmlOutput("IIDS Backend is running. Please use POST requests via the frontend.");
+  return HtmlService.createHtmlOutput("AIDS Backend is running. Please use POST requests via the frontend.");
 }
 
 function doPost(e) {

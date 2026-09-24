@@ -1,6 +1,6 @@
 BEGIN;
 
--- IIDS STUDENT PORTAL — PERFECT FINAL MASTER DATABASE SCHEMA
+-- AIDS STUDENT PORTAL — PERFECT FINAL MASTER DATABASE SCHEMA
 -- Consolidated from the actual sequence:
 --   iids_master_schema(2).sql
 --   012_fees_payments_redesign(1).sql

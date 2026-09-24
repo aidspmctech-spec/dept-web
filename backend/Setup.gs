@@ -59,10 +59,10 @@ function seedDemoData() {
   });
 
   // 3. Seed Access Key for Student
-  // Secret key for demo: IIDS-DEMO-123
+  // Secret key for demo: AIDS-DEMO-123
   Utils.appendRow('AccessKeys', {
     RegisterNo: regNo,
-    SecretKeyHash: Utils.hashKey('IIDS-DEMO-123'),
+    SecretKeyHash: Utils.hashKey('AIDS-DEMO-123'),
     Role: 'STUDENT',
     Status: 'ACTIVE',
     CreatedAt: Utils.now(),

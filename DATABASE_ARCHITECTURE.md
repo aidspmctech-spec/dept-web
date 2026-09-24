@@ -1,7 +1,7 @@
-# Database Architecture: IIDS Student Portal
+# Database Architecture: AIDS Student Portal
 
 ## Overview
-The IIDS Student Portal has been migrated from a Google Sheets backend to a normalized PostgreSQL database hosted on Supabase. This transition provides strong typing, relational integrity, and fine-grained security.
+The AIDS Student Portal has been migrated from a Google Sheets backend to a normalized PostgreSQL database hosted on Supabase. This transition provides strong typing, relational integrity, and fine-grained security.
 
 ## Entity Relationship Diagram (Conceptual)
 - `batches` (1) $\to$ `students` (N)

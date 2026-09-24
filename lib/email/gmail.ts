@@ -14,7 +14,7 @@ export async function sendVerificationEmail(toEmail: string, studentName: string
   try {
     const gmail = google.gmail({ version: 'v1', auth: oAuth2Client });
 
-    const subject = 'Verify Your IIDS Student Portal Account';
+    const subject = 'Verify Your AIDS Student Portal Account';
     const utf8Subject = `=?utf-8?B?${Buffer.from(subject).toString('base64')}?=`;
 
     const htmlContent = `
@@ -23,11 +23,11 @@ export async function sendVerificationEmail(toEmail: string, studentName: string
         <body style="font-family: Arial, sans-serif; color: #333; line-height: 1.6;">
           <div style="max-width: 600px; margin: 0 auto; border: 1px solid #eee; padding: 20px; border-radius: 10px;">
             <div style="text-align: center; margin-bottom: 20px;">
-              <h1 style="color: #4F46E5; margin: 0;">IIDS</h1>
+              <h1 style="color: #4F46E5; margin: 0;">AIDS</h1>
               <p style="font-weight: bold; margin: 0;">Artificial Intelligence and Data Science</p>
             </div>
             <p>Hello ${studentName},</p>
-            <p>Your IIDS Student Portal account has been created successfully.</p>
+            <p>Your AIDS Student Portal account has been created successfully.</p>
             <p>Please verify your email address by clicking the button below:</p>
             <div style="text-align: center; margin: 30px 0;">
               <a href="${verificationLink}" style="background-color: #4F46E5; color: white; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; display: inline-block;">Verify My Email</a>
@@ -39,7 +39,7 @@ export async function sendVerificationEmail(toEmail: string, studentName: string
             <hr style="border: 0; border-top: 1px solid #eee; margin: 20px 0;">
             <p style="font-size: 0.9em; color: #888; text-align: center;">
               Regards,<br>
-              <strong>IIDS Student Portal</strong><br>
+              <strong>AIDS Student Portal</strong><br>
               Artificial Intelligence and Data Science
             </p>
           </div>

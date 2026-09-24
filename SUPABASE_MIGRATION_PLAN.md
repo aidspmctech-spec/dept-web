@@ -1,4 +1,4 @@
-# Supabase Migration Plan: IIDS Student Portal
+# Supabase Migration Plan: AIDS Student Portal
 
 ## 1. Current Architecture
 The current application is built as a **Google Apps Script (GAS)** Web App.

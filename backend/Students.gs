@@ -116,7 +116,7 @@ const Students = {
 
     studentList.forEach(s => {
       // Generate a unique key for each student if not provided
-      const secretKey = s.secretKey || 'IIDS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+      const secretKey = s.secretKey || 'AIDS-' + Math.random().toString(36).substring(2, 8).toUpperCase();
 
       Utils.appendRow('Students', {
         RegisterNo: s.RegisterNo,

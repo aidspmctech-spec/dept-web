@@ -1,4 +1,4 @@
-# IIDS Portal Security Model
+# AIDS Portal Security Model
 
 ## 1. The Zero-Trust Architecture
 The system is designed on the principle that the **Frontend is Untrusted**. No security decisions are made in JavaScript.

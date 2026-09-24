@@ -40,7 +40,7 @@ export default function Sidebar({ role }: SidebarProps) {
 
   return (
     <aside className="w-64 bg-[#1a365d] text-white p-8 flex flex-col flex-shrink-0">
-      <div className="text-xl font-bold mb-8 uppercase tracking-wider">IIDS Portal</div>
+      <div className="text-xl font-bold mb-8 uppercase tracking-wider">AIDS Portal</div>
       <nav className="flex-grow">
         <ul className="space-y-2">
           {links.map((link) => (

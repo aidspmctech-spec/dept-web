@@ -1,4 +1,4 @@
-# Backup & Recovery Plan: IIDS Student Portal
+# Backup & Recovery Plan: AIDS Student Portal
 
 Since the system relies on a Google Spreadsheet as its primary database, the backup and recovery strategy is focused on the Google ecosystem.
 
@@ -6,9 +6,9 @@ Since the system relies on a Google Spreadsheet as its primary database, the bac
 
 ### 1. Manual Backup (Immediate)
 The simplest way to create a snapshot of the current database:
-- Open the `IIDS_Student_Portal_DB` spreadsheet.
+- Open the `AIDS_Student_Portal_DB` spreadsheet.
 - Go to **File** $\rightarrow$ **Make a copy**.
-- Name it `IIDS_DB_Backup_[YYYY-MM-DD]`.
+- Name it `AIDS_DB_Backup_[YYYY-MM-DD]`.
 
 ### 2. Automated Backups (Recommended)
 To avoid manual errors, use a simple Google Apps Script trigger to backup the database daily.
@@ -18,7 +18,7 @@ Create a new `.gs` file in your backend project:
 function dailyBackup() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const folder = DriveApp.getFolderById('YOUR_BACKUP_FOLDER_ID'); 
-  const fileName = 'IIDS_Backup_' + Utils.now();
+  const fileName = 'AIDS_Backup_' + Utils.now();
   
   // Create a copy of the spreadsheet in the backup folder
   DriveApp.getFileById(ss.getId()).makeCopy(fileName, folder);
@@ -41,7 +41,7 @@ If a row was accidentally deleted or overwritten:
 ### Scenario 2: Total Database Corruption/Loss
 If the entire spreadsheet is deleted or corrupted:
 1. Locate the most recent backup file in your Backup Folder.
-2. **Make a copy** of that backup and rename it to `IIDS_Student_Portal_DB`.
+2. **Make a copy** of that backup and rename it to `AIDS_Student_Portal_DB`.
 3. Copy the **new Spreadsheet ID**.
 4. Update the `SPREADSHEET_ID` in `Config.gs` in the Apps Script editor.
 5. Re-deploy the Web App (Deploy $\rightarrow$ Manage Deployments $\rightarrow$ Edit $\rightarrow$ New Version $\rightarrow$ Deploy).

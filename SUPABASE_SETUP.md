@@ -1,6 +1,6 @@
 # Supabase Setup Guide
 
-This guide explains how to set up the database for the IIDS Student Portal.
+This guide explains how to set up the database for the AIDS Student Portal.
 
 ## 1. Project Creation
 1. Create a new project at [supabase.com](https://supabase.com).

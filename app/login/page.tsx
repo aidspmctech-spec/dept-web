@@ -22,7 +22,7 @@ export default async function LoginPage(props: {
     <div className="flex items-center justify-center min-h-screen bg-[#f7fafc]">
       <div className="login-card text-center">
         <div className="login-header mb-8">
-          <h1 className="text-2xl font-bold text-[#1a365d] mb-2">IIDS Student Portal</h1>
+          <h1 className="text-2xl font-bold text-[#1a365d] mb-2">AIDS Student Portal</h1>
           <p className="text-gray-500 text-sm">Please enter your credentials to continue</p>
         </div>
 
