@@ -1,26 +1,20 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { getUserRole } from '@/lib/auth';
 import DesktopSidebar from './components/DesktopSidebar';
 import MobileHeader from './components/MobileHeader';
 import MobileDrawer from './components/MobileDrawer';
 
-export default function ProtectedLayoutClient({
-  children,
-}: {
+interface ProtectedLayoutClientProps {
+  role: string;
   children: React.ReactNode;
-}) {
-  const [role, setRole] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+}
 
-  useEffect(() => {
-    async function fetchRole() {
-      const userRole = await getUserRole();
-      setRole(userRole);
-    }
-    fetchRole();
-  }, []);
+export default function ProtectedLayoutClient({
+  role,
+  children,
+}: ProtectedLayoutClientProps) {
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -37,8 +31,6 @@ export default function ProtectedLayoutClient({
       document.body.style.overflow = '';
     }
   }, [isSidebarOpen]);
-
-  if (!role) return <div className="h-screen w-full flex items-center justify-center">Loading...</div>;
 
   return (
     <div className="flex h-screen overflow-hidden">
