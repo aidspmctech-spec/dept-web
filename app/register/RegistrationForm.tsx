@@ -1,3 +1,5 @@
+'use client';
+
 import { useState } from 'react';
 import { registerStudent } from './actions';
 import Link from 'next/link';
