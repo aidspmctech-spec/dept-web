@@ -2,76 +2,93 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
 export async function middleware(request: NextRequest) {
-  let response = NextResponse.next({
-    request: {
-      headers: request.headers,
+  // Keep one response object so refreshed cookies are not discarded.
+  let supabaseResponse = NextResponse.next({ request });
+
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+  if (!supabaseUrl || !supabaseAnonKey) {
+    console.error('[MIDDLEWARE] Missing Supabase public environment variables');
+    return new NextResponse('Authentication service is not configured.', { status: 500 });
+  }
+
+  const supabase = createServerClient(supabaseUrl, supabaseAnonKey, {
+    cookies: {
+      getAll() {
+        return request.cookies.getAll();
+      },
+      setAll(
+        cookiesToSet: { name: string; value: string; options: CookieOptions }[],
+        headers?: Record<string, string>,
+      ) {
+        // Make refreshed cookies available to Server Components in this request.
+        cookiesToSet.forEach(({ name, value }) => {
+          request.cookies.set(name, value);
+        });
+
+        // Rebuild the response with the updated request, then persist every cookie.
+        supabaseResponse = NextResponse.next({ request });
+        cookiesToSet.forEach(({ name, value, options }) => {
+          supabaseResponse.cookies.set(name, value, options);
+        });
+
+        // Supabase supplies cache-prevention headers when auth cookies change.
+        if (headers) {
+          Object.entries(headers).forEach(([name, value]) => {
+            supabaseResponse.headers.set(name, value);
+          });
+        }
+      },
     },
   });
 
-  const supabase = createServerClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
-    {
-      cookies: {
-        get(name: string) {
-          return request.cookies.get(name)?.value;
-        },
-        set(name: string, value: string, options: CookieOptions) {
-          request.cookies.set({ name, value, ...options });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({ name, value, ...options });
-        },
-        remove(name: string, options: CookieOptions) {
-          request.cookies.set({ name, value: '', ...options });
-          response = NextResponse.next({
-            request: {
-              headers: request.headers,
-            },
-          });
-          response.cookies.set({ name, value: '', ...options });
-        },
-      },
-    }
+  // Verify the JWT and refresh it when required. This avoids a user-info
+  // network round trip on every middleware invocation.
+  const { data: { claims }, error } = await supabase.auth.getClaims();
+  const isAuthenticated = !error && Boolean(claims?.sub);
+
+  const pathname = request.nextUrl.pathname;
+  const isLoginOrRegister = pathname === '/login' || pathname === '/register';
+
+  const isProtectedRoute = ['/dashboard', '/student', '/staff', '/admin'].some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
   );
 
-  const { data: { user } } = await supabase.auth.getUser();
+  if (!isAuthenticated && isProtectedRoute) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/login';
+    redirectUrl.searchParams.set('message', 'Please sign in to access this page');
 
-  const url = request.nextUrl.clone();
-
-  // Public routes
-  const isPublicRoute = [
-    '/',
-    '/login',
-    '/register',
-    '/api/auth/login',
-    '/api/auth/register',
-    '/api/auth/logout',
-  ].some(route => url.pathname === route);
-
-  // Protected routes
-  const isProtectedRoute = [
-    '/dashboard',
-    '/student',
-    '/staff',
-    '/admin',
-  ].some(route => url.pathname.startsWith(route));
-
-  if (!user && isProtectedRoute) {
-    url.pathname = '/login';
-    url.searchParams.set('message', 'Please sign in to access this page');
-    return NextResponse.redirect(url);
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    // A redirect must carry any refreshed/deleted cookies and cache headers too.
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+    for (const header of ['cache-control', 'expires', 'pragma']) {
+      const value = supabaseResponse.headers.get(header);
+      if (value) redirectResponse.headers.set(header, value);
+    }
+    return redirectResponse;
   }
 
-  if (user && (url.pathname === '/login' || url.pathname === '/register')) {
-    url.pathname = '/dashboard';
-    return NextResponse.redirect(url);
+  if (isAuthenticated && isLoginOrRegister) {
+    const redirectUrl = request.nextUrl.clone();
+    redirectUrl.pathname = '/dashboard';
+    redirectUrl.search = '';
+
+    const redirectResponse = NextResponse.redirect(redirectUrl);
+    supabaseResponse.cookies.getAll().forEach((cookie) => {
+      redirectResponse.cookies.set(cookie);
+    });
+    for (const header of ['cache-control', 'expires', 'pragma']) {
+      const value = supabaseResponse.headers.get(header);
+      if (value) redirectResponse.headers.set(header, value);
+    }
+    return redirectResponse;
   }
 
-  return response;
+  return supabaseResponse;
 }
 
 export const config = {
