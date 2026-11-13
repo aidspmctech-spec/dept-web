@@ -45,8 +45,12 @@ export async function middleware(request: NextRequest) {
 
   // Verify the JWT and refresh it when required. This avoids a user-info
   // network round trip on every middleware invocation.
-  const { data: { claims }, error } = await supabase.auth.getClaims();
+
+  const { data, error } = await supabase.auth.getClaims();
+
+  const claims = data?.claims;
   const isAuthenticated = !error && Boolean(claims?.sub);
+
 
   const pathname = request.nextUrl.pathname;
   const isLoginOrRegister = pathname === '/login' || pathname === '/register';
